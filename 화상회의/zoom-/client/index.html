@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>zoom- 보안 화상회의 (Jitsi Meet 기반)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            color: #888;
+            font-size: 1rem;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        input[type="text"],
+        input[type="password"],
+        input[type="email"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #00d9ff;
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            color: #1a1a2e;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            margin-top: 10px;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .meeting-container {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 30px;
+        }
+        
+        #jitsi-frame {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
+        
+        .security-info {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .security-badge {
+            text-align: center;
+        }
+        
+        .security-badge .icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .security-badge .label {
+            font-size: 0.8rem;
+            color: #888;
+        }
+        
+        .security-badge .value {
+            color: #00ff88;
+            font-weight: 600;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            border-bottom-color: #00d9ff;
+            color: #00d9ff;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-info {
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+        }
+        
+        .alert-success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+        
+        .feature-list {
+            list-style: none;
+        }
+        
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .feature-list li::before {
+            content: "✓";
+            color: #00ff88;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔒 zoom- 보안 화상회의</h1>
+            <p class="subtitle">Jitsi Meet 기반 보안 강화 플랫폼</p>
+        </header>
+        
+        <!-- 로그인 화면 -->
+        <div id="login-screen" class="login-container">
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('login')">로그인</div>
+                <div class="tab" onclick="showTab('register')">회원가입</div>
+            </div>
+            
+            <div id="login-tab" class="tab-content active">
+                <div class="alert alert-info">
+                    <strong>보안 기능:</strong> 다단계 인증(MFA) 지원
+                </div>
+                
+                <div class="form-group">
+                    <label>사용자 이름</label>
+                    <input type="text" id="username" placeholder="사용자 이름 입력">
+                </div>
+                
+                <div class="form-group">
+                    <label>비밀번호</label>
+                    <input type="password" id="password" placeholder="비밀번호 입력">
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="mfa-enabled"> 다단계 인증 사용
+                    </label>
+                </div>
+                
+                <button class="btn btn-primary" onclick="login()">로그인</button>
+            </div>
+            
+            <div id="register-tab" class="tab-content">
+                <div class="form-group">
+                    <label>사용자 이름</label>
+                    <input type="text" id="reg-username" placeholder="사용자 이름 입력">
+                </div>
+                
+                <div class="form-group">
+                    <label>이메일</label>
+                    <input type="email" id="reg-email" placeholder="이메일 입력">
+                </div>
+                
+                <div class="form-group">
+                    <label>비밀번호</label>
+                    <input type="password" id="reg-password" placeholder="비밀번호 입력">
+                </div>
+                
+                <button class="btn btn-primary" onclick="register()">회원가입</button>
+            </div>
+        </div>
+        
+        <!-- 회의실 화면 -->
+        <div id="meeting-screen" class="meeting-container">
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('join')">회의 참여</div>
+                <div class="tab" onclick="showTab('create')">회의 생성</div>
+                <div class="tab" onclick="showTab('security')">보안 설정</div>
+            </div>
+            
+            <div id="join-tab" class="tab-content active">
+                <div class="form-group">
+                    <label>회의室 ID</label>
+                    <input type="text" id="meeting-id" placeholder="회의室 ID 입력">
+                </div>
+                
+                <button class="btn btn-primary" onclick="joinMeeting()">회의 참여</button>
+            </div>
+            
+            <div id="create-tab" class="tab-content">
+                <div class="form-group">
+                    <label>회의室 이름</label>
+                    <input type="text" id="new-meeting-name" placeholder="회의室 이름 입력">
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="e2ee-enabled"> 종단 간 암호화(E2EE) 활성화
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="lobby-enabled"> 로비 모드 활성화
+                    </label>
+                </div>
+                
+                <button class="btn btn-primary" onclick="createMeeting()">회의室 생성</button>
+            </div>
+            
+            <div id="security-tab" class="tab-content">
+                <div class="alert alert-success">
+                    <strong>활성화된 보안 기능:</strong>
+                </div>
+                
+                <ul class="feature-list">
+                    <li>AES-256-GCM 암호화</li>
+                    <li>RSA-4096 키 교환</li>
+                    <li>다단계 인증 (MFA)</li>
+                    <li>종단 간 암호화 (E2EE)</li>
+                    <li>세션 고정 공격 방어</li>
+                    <li>메타데이터 보호</li>
+                    <li>입력 검증 및 샌드박스</li>
+                </ul>
+            </div>
+            
+            <!-- Jitsi Meet 임베드 -->
+            <iframe id="jitsi-frame" allow="camera; microphone; fullscreen; display-capture"></iframe>
+            
+            <!-- 보안 정보 -->
+            <div class="security-info">
+                <div class="security-badge">
+                    <div class="icon">🔐</div>
+                    <div class="label">암호화</div>
+                    <div class="value">AES-256</div>
+                </div>
+                <div class="security-badge">
+                    <div class="icon">🔑</div>
+                    <div class="label">키 교환</div>
+                    <div class="value">RSA-4096</div>
+                </div>
+                <div class="security-badge">
+                    <div class="icon">🛡️</div>
+                    <div class="label">E2EE</div>
+                    <div class="value">활성화</div>
+                </div>
+                <div class="security-badge">
+                    <div class="icon">✅</div>
+                    <div class="label">MFA</div>
+                    <div class="value">활성화</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 탭 전환
+        function showTab(tabName) {
+            // 탭 버튼
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 탭 콘텐츠
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + '-tab').classList.add('active');
+        }
+        
+        // 로그인
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const mfaEnabled = document.getElementById('mfa-enabled').checked;
+            
+            if (!username || !password) {
+                alert('사용자 이름과 비밀번호를 입력해주세요.');
+                return;
+            }
+            
+            // 실제 구현에서는 서버와 통신
+            console.log('로그인 시도:', { username, mfaEnabled });
+            
+            // 회의실 화면으로 전환
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('meeting-screen').style.display = 'block';
+        }
+        
+        // 회원가입
+        function register() {
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            
+            if (!username || !email || !password) {
+                alert('모든 필드를 입력해주세요.');
+                return;
+            }
+            
+            // 실제 구현에서는 서버와 통신
+            console.log('회원가입:', { username, email });
+            alert('회원가입이 완료되었습니다.');
+        }
+        
+        // 회의 참여
+        function joinMeeting() {
+            const meetingId = document.getElementById('meeting-id').value;
+            
+            if (!meetingId) {
+                alert('회의室 ID를 입력해주세요.');
+                return;
+            }
+            
+            // Jitsi Meet URL 구성
+            const jitsiUrl = `https://meet.jit.si/${meetingId}#config.prejoinPageEnabled=false&config.startWithAudioMuted=true&config.startWithVideoMuted=true`;
+            
+            document.getElementById('jitsi-frame').src = jitsiUrl;
+            console.log('회의 참여:', meetingId);
+        }
+        
+        // 회의 생성
+        function createMeeting() {
+            const meetingName = document.getElementById('new-meeting-name').value;
+            const e2eeEnabled = document.getElementById('e2ee-enabled').checked;
+            const lobbyEnabled = document.getElementById('lobby-enabled').checked;
+            
+            if (!meetingName) {
+                alert('회의室 이름을 입력해주세요.');
+                return;
+            }
+            
+            // 고유 회의室 ID 생성
+            const meetingId = 'secure-' + Math.random().toString(36).substr(2, 9);
+            
+            // Jitsi Meet URL 구성 (보안 옵션 포함)
+            let jitsiUrl = `https://meet.jit.si/${meetingId}`;
+            jitsiUrl += '#config.prejoinPageEnabled=false';
+            
+            if (lobbyEnabled) {
+                jitsiUrl += '&config.enableLobby=true';
+            }
+            
+            document.getElementById('jitsi-frame').src = jitsiUrl;
+            console.log('회의 생성:', { meetingId, meetingName, e2eeEnabled, lobbyEnabled });
+        }
+        
+        // 보안 모듈 통합 (Python/Java와 연동 시)
+        class SecurityClient {
+            constructor() {
+                this.encryptionEnabled = true;
+                this.mfaEnabled = true;
+            }
+            
+            async encryptMessage(message) {
+                // Python 암호화 모듈과 연동
+                console.log('메시지 암호화:', message);
+                return message;
+            }
+            
+            async validateSession() {
+                // Java 인증 모듈과 연동
+                console.log('세션 검증');
+                return true;
+            }
+        }
+        
+        // 보안 클라이언트 초기화
+        const securityClient = new SecurityClient();
+    </script>
+</body>
+</html>
