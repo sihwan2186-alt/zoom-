@@ -276,7 +276,7 @@ if __name__ == "__main__":
     print(f"솔트: {salt.hex()}")
 
     # 암호화 테스트
-    message = "Zoom 보안 강화 메시지".encode("utf-8")
+    message = "화상회의 보안 강화 메시지".encode("utf-8")
     encrypted = enc.encrypt_aes256(message, key)
     print(f"암호화 완료: {len(encrypted)} bytes")
 

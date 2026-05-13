@@ -1,14 +1,14 @@
-# Zoom 보안 분석 및 Jitsi Meet 기반 보완 프로젝트
+# 화상회의 보안 분석 및 오픈소스 WebRTC 기반 보완 프로젝트
 
 ## 프로젝트 개요
-- **프로젝트명**: zoom- (화상회의 보안 강화)
-- **목적**: Zoom 취약점 분석 및 Jitsi Meet 기반 보완方案 구현
+- **프로젝트명**: video-conference-security (화상회의 보안 강화)
+- **목적**: 특정 제품이 아닌 화상회의 아키텍처 전반의 보안 취약점 분석 및 오픈소스 WebRTC 기반 보완 구현
 - **기술 스택**: Python, Java
 
 ## 보안 취약점 분석 분야
 
 ### 1. 암호화 보안 (Encryption)
-- Zoom 종단 간 암호화(E2EE) 미흡 문제
+- 화상회의 서비스의 종단 간 암호화(E2EE) 적용 범위 및 키 관리 위험
 - AES-256, RSA-4096 기반 보완 구현
 
 ### 2. 인증 보안 (Authentication)
@@ -43,7 +43,7 @@
 
 ## 디렉토리 구조
 ```
-zoom-/
+video-conference-security/
 ├── security/
 │   ├── encryption/      # 암호화 보안 모듈
 │   ├── authentication/  # 인증 보안 모듈
@@ -56,12 +56,12 @@ zoom-/
 
 ## 실행 검증 예시
 ```bash
-python -m compileall 화상회의/zoom-
-python 화상회의/zoom-/security/encryption/encryption.py
-python 화상회의/zoom-/security/assessment/threat_zap_comparison.py
-python 화상회의/zoom-/security/assessment/threat_zap_comparison.py --taxonomy 2025
-javac -encoding UTF-8 -d .tmp_classes 화상회의/zoom-/security/authentication/AuthModule.java
-java -cp .tmp_classes com.zoom.security.authentication.AuthModule
+python -m compileall 화상회의/video-conference-security
+python 화상회의/video-conference-security/security/encryption/encryption.py
+python 화상회의/video-conference-security/security/assessment/threat_zap_comparison.py
+python 화상회의/video-conference-security/security/assessment/threat_zap_comparison.py --taxonomy 2025
+javac -encoding UTF-8 -d .tmp_classes 화상회의/video-conference-security/security/authentication/AuthModule.java
+java -cp .tmp_classes com.videoconference.security.authentication.AuthModule
 ```
 
 ## ZAP 실험 데이터 정리 예시
@@ -69,7 +69,7 @@ java -cp .tmp_classes com.zoom.security.authentication.AuthModule
 ZAP JSON 리포트가 있을 때는 다음처럼 논문용 비교표와 원자료 JSON을 생성한다.
 
 ```bash
-python 화상회의/zoom-/security/assessment/threat_zap_comparison.py ^
+python 화상회의/video-conference-security/security/assessment/threat_zap_comparison.py ^
   --zap-json zap-report.json ^
   --taxonomy 2021 ^
   --stride-minutes 180 ^
@@ -82,7 +82,7 @@ python 화상회의/zoom-/security/assessment/threat_zap_comparison.py ^
 공식 ZAP Docker baseline scan 형식에 맞춘 실행 예시는 다음 명령으로 출력할 수 있다.
 
 ```bash
-python 화상회의/zoom-/security/assessment/threat_zap_comparison.py --target-url https://meet.local
+python 화상회의/video-conference-security/security/assessment/threat_zap_comparison.py --target-url https://meet.local
 ```
 
 정량 비교 지표는 다음을 기준으로 해석한다.

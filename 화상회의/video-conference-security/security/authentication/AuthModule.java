@@ -1,4 +1,4 @@
-package com.zoom.security.authentication;
+package com.videoconference.security.authentication;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -12,7 +12,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 /**
  * 인증 보안 모듈 - MFA, HMAC 서명 토큰 기반 인증
- * Zoom 취약점 보완: 회의 참여자 검증 강화
+ * 화상회의 플랫폼 보완: 회의 참여자 검증 강화
  */
 public class AuthModule {
 
