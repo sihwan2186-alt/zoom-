@@ -27,6 +27,11 @@
 - 세션 하이재킹 위험
 - 안전한 세션 생성, 갱신, 폐기
 
+### 6. STRIDE/ZAP 비교 분석 (Assessment)
+- STRIDE 위협 모델링 결과와 OWASP ZAP JSON 리포트를 OWASP Top 10 기준으로 매핑
+- 탐지 건수, 커버리지, 중복 탐지 카테고리, 상호 보완 탐지 영역 산출
+- 학부 논문 주제인 “STRIDE 위협 모델링과 OWASP ZAP 동적 자동화 진단의 취약점 탐지 효과성 비교 분석” 실험 데이터 정리 지원
+
 ## 디렉토리 구조
 ```
 zoom-/
@@ -35,6 +40,20 @@ zoom-/
 │   ├── authentication/  # 인증 보안 모듈
 │   ├── data_leak_prevention/  # 데이터 유출 방지
 │   ├── buffer_overflow/      # 버퍼 오버플로우 탐지
-│   └── session_management/   # 세션 관리 보안
+│   ├── session_management/   # 세션 관리 보안
+│   └── assessment/      # STRIDE/ZAP 비교 분석
 └── README.md
 ```
+
+## 실행 검증 예시
+```bash
+python -m compileall 화상회의/zoom-
+python 화상회의/zoom-/security/encryption/encryption.py
+python 화상회의/zoom-/security/assessment/threat_zap_comparison.py
+javac -encoding UTF-8 -d .tmp_classes 화상회의/zoom-/security/authentication/AuthModule.java
+java -cp .tmp_classes com.zoom.security.authentication.AuthModule
+```
+
+`encryption.py`는 `cryptography` 패키지가 설치된 환경에서는 AES-256-GCM/RSA-OAEP를 사용하고,
+패키지가 없는 학습 환경에서는 HMAC 기반 데모 모드로 실행된다. 데모 모드는 연구 흐름 검증용이며
+운영 암호화로 사용하지 않는다.
