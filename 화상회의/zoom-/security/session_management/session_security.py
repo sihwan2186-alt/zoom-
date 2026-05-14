@@ -29,6 +29,7 @@ class SessionManager:
     """세션 관리 모듈"""
 
     SESSION_TIMEOUT = 3600  # 1시간
+    IDLE_TIMEOUT = 1800  # 30분
     REFRESH_INTERVAL = 1800  # 30분
     MAX_SESSIONS_PER_USER = 5
 
@@ -40,7 +41,10 @@ class SessionManager:
 
     def create_session(self, user_id: str, ip_address: str = "", user_agent: str = "") -> Session:
         """세션 생성"""
-        user_sessions = [s for s in self.sessions.values() if s.user_id == user_id]
+        user_sessions = [
+            s for s in self.sessions.values()
+            if s.user_id == user_id and s.is_active
+        ]
         if len(user_sessions) >= self.MAX_SESSIONS_PER_USER:
             oldest = min(user_sessions, key=lambda s: s.last_accessed)
             self.destroy_session(oldest.session_id)
@@ -66,6 +70,7 @@ class SessionManager:
         user_agent: str = ""
     ) -> Tuple[bool, Optional[Session]]:
         """세션 검증"""
+        current_time = time.time()
         if not session_id or not self._verify_session_id_signature(session_id):
             self._audit("invalid_session_signature", session_id or "", "")
             return False, None
@@ -74,7 +79,12 @@ class SessionManager:
         if session is None or not session.is_active:
             return False, None
 
-        if time.time() > session.expires_at:
+        if current_time > session.expires_at:
+            self.destroy_session(session_id)
+            return False, None
+
+        if current_time - session.last_accessed > self.IDLE_TIMEOUT:
+            self._audit("session_idle_timeout", session_id, session.user_id)
             self.destroy_session(session_id)
             return False, None
 
@@ -90,11 +100,11 @@ class SessionManager:
                 self.destroy_session(session_id)
                 return False, None
 
-        session.last_accessed = time.time()
+        session.last_accessed = current_time
 
-        if time.time() - session.created_at > self.REFRESH_INTERVAL:
-            session.created_at = time.time()
-            session.expires_at = time.time() + self.SESSION_TIMEOUT
+        if current_time - session.created_at > self.REFRESH_INTERVAL:
+            session.created_at = current_time
+            session.expires_at = current_time + self.SESSION_TIMEOUT
             session.refresh_count += 1
             self._audit("session_refreshed", session_id, session.user_id)
 
@@ -102,8 +112,10 @@ class SessionManager:
 
     def refresh_session(self, session_id: str) -> bool:
         """세션 갱신"""
+        if not session_id or not self._verify_session_id_signature(session_id):
+            return False
         session = self.sessions.get(session_id)
-        if not session:
+        if not session or not session.is_active or time.time() > session.expires_at:
             return False
         session.last_accessed = time.time()
         session.expires_at = time.time() + self.SESSION_TIMEOUT
@@ -153,9 +165,32 @@ class SessionManager:
             "created_at": datetime.fromtimestamp(session.created_at).isoformat(),
             "last_accessed": datetime.fromtimestamp(session.last_accessed).isoformat(),
             "expires_at": datetime.fromtimestamp(session.expires_at).isoformat(),
+            "idle_expires_at": datetime.fromtimestamp(session.last_accessed + self.IDLE_TIMEOUT).isoformat(),
             "is_active": session.is_active,
             "refresh_count": session.refresh_count,
         }
+
+    def build_session_cookie_header(
+        self,
+        session_id: str,
+        cookie_name: str = "vc_session",
+        max_age: Optional[int] = None,
+        same_site: str = "Strict",
+    ) -> str:
+        """브라우저 전달용 보안 세션 쿠키 헤더를 생성한다."""
+        if not session_id or not self._verify_session_id_signature(session_id):
+            raise ValueError("invalid session id")
+        if same_site not in {"Strict", "Lax", "None"}:
+            raise ValueError("same_site must be Strict, Lax, or None")
+        if max_age is None:
+            max_age = self.SESSION_TIMEOUT
+
+        cookie = (
+            f"{cookie_name}={session_id}; Max-Age={int(max_age)}; Path=/; "
+            "HttpOnly; Secure; "
+            f"SameSite={same_site}"
+        )
+        return cookie
 
     def _generate_session_id(self) -> str:
         """안전한 세션 ID 생성"""
@@ -218,6 +253,7 @@ if __name__ == "__main__":
 
     info = sm.get_session_info(session.session_id)
     print(f"세션 정보: {info}")
+    print(f"보안 쿠키 헤더: {sm.build_session_cookie_header(session.session_id)[:80]}...")
 
     sfp = SessionFixationProtection(sm)
     new_session = sfp.regenerate_session(session.session_id, "user123")

@@ -41,6 +41,13 @@
 - OWASP Top 10은 2021판과 2025판의 분류가 다르므로, 논문 본문에는 사용한 버전을 명시한다. 기존 연구 비교는 2021, 최신성 검토는 2025 기준 표를 함께 제시할 수 있다.
 - WebRTC 보안 선행연구는 통신 중단, 변조, 도청 시나리오를 다루므로, STRIDE 샘플에는 미디어 경로의 Information Disclosure와 스트리밍 서버의 Denial of Service 항목을 포함한다.
 
+## 최근 코드 보완 사항
+
+- `authentication/AuthModule.java`: 비밀번호 저장 방식을 단일 SHA-256에서 PBKDF2-HMAC-SHA256으로 변경하고, 로그인 실패 5회 시 5분 잠금 정책을 추가했다.
+- `authentication/AuthModule.java`: 토큰 유효기간을 30분으로 줄이고, 토큰 폐기 후 재검증이 실패하는지 실행 예시에 포함했다.
+- `session_management/session_security.py`: 30분 유휴 세션 만료를 추가하고, `HttpOnly; Secure; SameSite=Strict` 속성이 포함된 세션 쿠키 헤더 생성 기능을 추가했다.
+- 추가 검토 결과와 향후 필요한 자료는 저장소 루트의 `code_improvement_notes.md`에 정리했다.
+
 ## 디렉토리 구조
 ```
 zoom-/

@@ -1,6 +1,7 @@
 package com.zoom.security.authentication;
 
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -8,6 +9,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import javax.crypto.Mac;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
@@ -18,12 +21,17 @@ public class AuthModule {
 
     private static final int TOTP_LENGTH = 6;
     private static final long TOTP_VALID_PERIOD_MILLIS = TimeUnit.SECONDS.toMillis(30);
-    private static final long TOKEN_VALID_PERIOD_MILLIS = TimeUnit.HOURS.toMillis(2);
+    private static final long TOKEN_VALID_PERIOD_MILLIS = TimeUnit.MINUTES.toMillis(30);
+    private static final int PBKDF2_ITERATIONS = 210_000;
+    private static final int PASSWORD_HASH_BYTES = 32;
+    private static final int MAX_FAILED_PASSWORD_ATTEMPTS = 5;
+    private static final long PASSWORD_LOCKOUT_MILLIS = TimeUnit.MINUTES.toMillis(5);
 
     private final SecureRandom secureRandom = new SecureRandom();
     private final Map<String, UserRecord> users = new ConcurrentHashMap<>();
     private final Map<String, MfaChallenge> mfaChallenges = new ConcurrentHashMap<>();
     private final Map<String, UserSession> sessions = new ConcurrentHashMap<>();
+    private final Map<String, LoginAttempt> loginAttempts = new ConcurrentHashMap<>();
     private final byte[] tokenSigningKey = randomBytes(32);
 
     static class UserRecord {
@@ -52,6 +60,11 @@ public class AuthModule {
         }
     }
 
+    static class LoginAttempt {
+        int failedAttempts;
+        long lockedUntil;
+    }
+
     static class UserSession {
         String userId;
         String username;
@@ -69,14 +82,20 @@ public class AuthModule {
     }
 
     public String registerUser(String username, String password) {
-        if (username == null || username.length() < 2 || password == null || password.length() < 8) {
+        if (username == null || username.trim().length() < 2 || password == null || password.length() < 8) {
             throw new IllegalArgumentException("username or password policy violation");
+        }
+        String normalizedUsername = username.trim();
+        boolean duplicateUsername = users.values().stream()
+            .anyMatch(user -> user.username.equalsIgnoreCase(normalizedUsername));
+        if (duplicateUsername) {
+            throw new IllegalArgumentException("duplicate username");
         }
         String userId = generateUserId();
         byte[] salt = randomBytes(16);
         byte[] hash = hashPassword(password, salt);
-        users.put(userId, new UserRecord(userId, username, salt, hash));
-        System.out.println("사용자 등록: " + username + " (ID: " + userId + ")");
+        users.put(userId, new UserRecord(userId, normalizedUsername, salt, hash));
+        System.out.println("사용자 등록: " + normalizedUsername + " (ID: " + userId + ")");
         return userId;
     }
 
@@ -85,8 +104,17 @@ public class AuthModule {
         if (user == null || password == null) {
             return false;
         }
+        if (isPasswordLocked(userId)) {
+            return false;
+        }
         byte[] inputHash = hashPassword(password, user.passwordSalt);
-        return MessageDigest.isEqual(user.passwordHash, inputHash);
+        boolean matched = MessageDigest.isEqual(user.passwordHash, inputHash);
+        if (matched) {
+            clearPasswordFailures(userId);
+        } else {
+            recordPasswordFailure(userId);
+        }
+        return matched;
     }
 
     public String generateTOTPCode(String userId) {
@@ -122,7 +150,8 @@ public class AuthModule {
     }
 
     public String generateToken(String userId, String username, boolean mfaVerified) {
-        if (!users.containsKey(userId)) {
+        UserRecord user = users.get(userId);
+        if (user == null) {
             throw new IllegalArgumentException("unknown user");
         }
         if (!mfaVerified) {
@@ -133,7 +162,7 @@ public class AuthModule {
         String body = tokenId + "." + expiry + "." + userId;
         String signature = sign(body);
 
-        sessions.put(tokenId, new UserSession(userId, username, true));
+        sessions.put(tokenId, new UserSession(userId, user.username, true));
         System.out.println("토큰 생성: " + safePrefix(tokenId) + "...");
 
         return body + "." + signature;
@@ -200,13 +229,46 @@ public class AuthModule {
     }
 
     private byte[] hashPassword(String password, byte[] salt) {
+        PBEKeySpec spec = new PBEKeySpec(
+            password.toCharArray(),
+            salt,
+            PBKDF2_ITERATIONS,
+            PASSWORD_HASH_BYTES * 8
+        );
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            digest.update(salt);
-            return digest.digest(password.getBytes(StandardCharsets.UTF_8));
-        } catch (Exception ex) {
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            return factory.generateSecret(spec).getEncoded();
+        } catch (GeneralSecurityException ex) {
             throw new IllegalStateException("password hashing failed", ex);
+        } finally {
+            spec.clearPassword();
         }
+    }
+
+    public boolean isPasswordLocked(String userId) {
+        LoginAttempt attempt = loginAttempts.get(userId);
+        if (attempt == null) {
+            return false;
+        }
+        if (System.currentTimeMillis() > attempt.lockedUntil) {
+            if (attempt.lockedUntil > 0) {
+                loginAttempts.remove(userId);
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private void recordPasswordFailure(String userId) {
+        LoginAttempt attempt = loginAttempts.computeIfAbsent(userId, ignored -> new LoginAttempt());
+        attempt.failedAttempts += 1;
+        if (attempt.failedAttempts >= MAX_FAILED_PASSWORD_ATTEMPTS) {
+            attempt.lockedUntil = System.currentTimeMillis() + PASSWORD_LOCKOUT_MILLIS;
+        }
+    }
+
+    private void clearPasswordFailures(String userId) {
+        loginAttempts.remove(userId);
     }
 
     private String sign(String body) {
@@ -244,5 +306,6 @@ public class AuthModule {
         System.out.println("토큰 검증 결과: " + (valid ? "유효" : "무효"));
 
         auth.invalidateToken(token);
+        System.out.println("폐기 후 토큰 검증 결과: " + (auth.validateToken(token) ? "유효" : "무효"));
     }
 }
