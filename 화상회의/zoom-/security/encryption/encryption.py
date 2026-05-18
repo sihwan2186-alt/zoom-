@@ -37,8 +37,10 @@ class EncryptionModule:
     fallback은 실험용이며 운영 암호화로 쓰면 안 된다.
     """
 
-    def __init__(self):
+    def __init__(self, allow_demo_fallback: bool = True):
         self.key_size = 256  # AES-256
+        self.allow_demo_fallback = allow_demo_fallback
+        self._seen_media_packets = set()
         self.algorithm = "AES-256-GCM" if self.has_aes_gcm() else "HMAC-SHA256 stream demo"
 
     @staticmethod
@@ -74,6 +76,8 @@ class EncryptionModule:
         self._validate_key(key)
 
         if not self.has_aes_gcm():
+            if not self.allow_demo_fallback:
+                raise CryptoDependencyError("AES-GCM requires the cryptography package")
             return self._encrypt_fallback(plaintext, key, aad)
 
         iv = os.urandom(12)
@@ -94,6 +98,8 @@ class EncryptionModule:
         self._validate_key(key)
 
         if ciphertext.startswith(FALLBACK_PREFIX):
+            if not self.allow_demo_fallback:
+                raise CryptoDependencyError("fallback ciphertext is disabled in production mode")
             return self._decrypt_fallback(ciphertext, key, aad)
 
         if ciphertext.startswith(AES_PREFIX):
@@ -121,14 +127,49 @@ class EncryptionModule:
             decryptor.authenticate_additional_data(aad)
         return decryptor.update(data) + decryptor.finalize()
 
-    def encrypt_media_packet(self, packet: bytes, key: bytes, meeting_id: str, sequence: int) -> bytes:
-        """회의 ID와 패킷 번호를 AAD로 묶어 재전송/변조 탐지에 활용한다."""
-        aad = f"{meeting_id}:{sequence}".encode("utf-8")
-        return self.encrypt_aes256(packet, key, aad=aad)
+    def derive_epoch_key(self, base_key: bytes, meeting_id: str, epoch: int) -> bytes:
+        """회의 epoch별 미디어 키를 분리한다."""
+        self._validate_key(base_key)
+        context = f"video-conference-media:{meeting_id}:{epoch}".encode("utf-8")
+        return hmac.new(base_key, context, hashlib.sha256).digest()
 
-    def decrypt_media_packet(self, packet: bytes, key: bytes, meeting_id: str, sequence: int) -> bytes:
-        aad = f"{meeting_id}:{sequence}".encode("utf-8")
-        return self.decrypt_aes256(packet, key, aad=aad)
+    def build_media_aad(self, meeting_id: str, sender_id: str, epoch: int, sequence: int) -> bytes:
+        """SFrame 계열처럼 라우팅 메타데이터를 인증 데이터로 묶는다."""
+        return f"{meeting_id}:{sender_id}:{epoch}:{sequence}".encode("utf-8")
+
+    def encrypt_media_packet(
+        self,
+        packet: bytes,
+        key: bytes,
+        meeting_id: str,
+        sequence: int,
+        sender_id: str = "participant",
+        epoch: int = 0,
+    ) -> bytes:
+        """회의/참가자/epoch/패킷 번호를 AAD로 묶어 재전송/변조 탐지에 활용한다."""
+        epoch_key = self.derive_epoch_key(key, meeting_id, epoch)
+        aad = self.build_media_aad(meeting_id, sender_id, epoch, sequence)
+        return self.encrypt_aes256(packet, epoch_key, aad=aad)
+
+    def decrypt_media_packet(
+        self,
+        packet: bytes,
+        key: bytes,
+        meeting_id: str,
+        sequence: int,
+        sender_id: str = "participant",
+        epoch: int = 0,
+        reject_replay: bool = True,
+    ) -> bytes:
+        replay_key = (meeting_id, sender_id, epoch, sequence)
+        if reject_replay and replay_key in self._seen_media_packets:
+            raise ValueError("replayed media packet")
+        epoch_key = self.derive_epoch_key(key, meeting_id, epoch)
+        aad = self.build_media_aad(meeting_id, sender_id, epoch, sequence)
+        plaintext = self.decrypt_aes256(packet, epoch_key, aad=aad)
+        if reject_replay:
+            self._seen_media_packets.add(replay_key)
+        return plaintext
 
     def _validate_key(self, key: bytes) -> None:
         if len(key) != 32:
@@ -165,7 +206,7 @@ class EncryptionModule:
 
 
 class KeyManagement:
-    """분산형 키 관리 - Jitsi Meet 기반 보완"""
+    """분산형 키 관리 - 화상회의 E2EE 보완 모델"""
 
     def __init__(self):
         self.keys = {}
@@ -214,12 +255,56 @@ class KeyManagement:
 
 
 @dataclass
+class GroupKeyEpoch:
+    """회의 참여자 변화에 따라 갱신되는 그룹 키 상태."""
+    meeting_id: str
+    epoch: int
+    active_participants: Tuple[str, ...]
+    base_key: bytes
+    reason: str
+
+
+class ConferenceKeySchedule:
+    """참가자 입장/퇴장/강퇴 시 새 epoch 키를 발급하는 최소 모델."""
+
+    def __init__(self, meeting_id: str, participants: Iterable[str] = ()):
+        self.meeting_id = meeting_id
+        self.epoch = GroupKeyEpoch(
+            meeting_id=meeting_id,
+            epoch=0,
+            active_participants=tuple(sorted(set(participants))),
+            base_key=os.urandom(32),
+            reason="initial",
+        )
+
+    def current_media_key(self, encryption: EncryptionModule) -> bytes:
+        return encryption.derive_epoch_key(
+            self.epoch.base_key,
+            self.epoch.meeting_id,
+            self.epoch.epoch,
+        )
+
+    def rotate_for_membership_change(self, participants: Iterable[str], reason: str) -> GroupKeyEpoch:
+        """화상회의 E2EE/MLS 연구에서 강조하는 membership liveness를 코드 모델에 반영한다."""
+        self.epoch = GroupKeyEpoch(
+            meeting_id=self.meeting_id,
+            epoch=self.epoch.epoch + 1,
+            active_participants=tuple(sorted(set(participants))),
+            base_key=os.urandom(32),
+            reason=reason,
+        )
+        return self.epoch
+
+
+@dataclass
 class ElectronicEnvelope:
     """논문에서 다룬 전자봉투 방식의 최소 구현 모델."""
     encrypted_payload: bytes
     wrapped_keys: Dict[str, bytes]
     meeting_id: str
     sequence: int
+    sender_id: str = "participant"
+    epoch: int = 0
 
 
 class EnvelopeService:
@@ -235,19 +320,23 @@ class EnvelopeService:
         recipient_public_keys: Dict[str, object],
         meeting_id: str,
         sequence: int,
+        sender_id: str = "participant",
+        epoch: int = 0,
     ) -> ElectronicEnvelope:
         session_key = self.key_management.generate_session_key()
         encrypted_payload = self.encryption.encrypt_media_packet(
             media_packet,
             session_key,
             meeting_id,
-            sequence
+            sequence,
+            sender_id=sender_id,
+            epoch=epoch,
         )
         wrapped_keys = {
             participant_id: self.key_management.encrypt_with_public_key(public_key, session_key)
             for participant_id, public_key in recipient_public_keys.items()
         }
-        return ElectronicEnvelope(encrypted_payload, wrapped_keys, meeting_id, sequence)
+        return ElectronicEnvelope(encrypted_payload, wrapped_keys, meeting_id, sequence, sender_id, epoch)
 
     def open_for_recipient(
         self,
@@ -261,7 +350,9 @@ class EnvelopeService:
             envelope.encrypted_payload,
             session_key,
             envelope.meeting_id,
-            envelope.sequence
+            envelope.sequence,
+            sender_id=envelope.sender_id,
+            epoch=envelope.epoch,
         )
 
 
@@ -276,7 +367,7 @@ if __name__ == "__main__":
     print(f"솔트: {salt.hex()}")
 
     # 암호화 테스트
-    message = "Zoom 보안 강화 메시지".encode("utf-8")
+    message = "화상회의 보안 강화 메시지".encode("utf-8")
     encrypted = enc.encrypt_aes256(message, key)
     print(f"암호화 완료: {len(encrypted)} bytes")
 
@@ -284,8 +375,12 @@ if __name__ == "__main__":
     decrypted = enc.decrypt_aes256(encrypted, key)
     print(f"복호화 결과: {decrypted.decode('utf-8')}")
 
-    packet = enc.encrypt_media_packet(b"frame-001", key, "secure-room", 1)
-    print(f"미디어 패킷 복호화: {enc.decrypt_media_packet(packet, key, 'secure-room', 1).decode()}")
+    packet = enc.encrypt_media_packet(b"frame-001", key, "secure-room", 1, sender_id="user123", epoch=0)
+    print(f"미디어 패킷 복호화: {enc.decrypt_media_packet(packet, key, 'secure-room', 1, sender_id='user123', epoch=0).decode()}")
+
+    schedule = ConferenceKeySchedule("secure-room", ["user123", "user456"])
+    new_epoch = schedule.rotate_for_membership_change(["user123"], "participant_left")
+    print(f"그룹 키 epoch 갱신: {new_epoch.epoch}, 참여자: {new_epoch.active_participants}")
 
     # RSA 키쌍 테스트
     if rsa is not None:

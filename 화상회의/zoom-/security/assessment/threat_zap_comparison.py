@@ -206,6 +206,59 @@ REFERENCE_BASIS = (
     },
 )
 
+PAPER_EVIDENCE = (
+    {
+        "file": "1601.00184v1.pdf",
+        "title": "The Security of WebRTC",
+        "use": "WebRTC의 중단, 변조, 도청 위협을 STRIDE의 Tampering/Information Disclosure/DoS 항목으로 연결",
+    },
+    {
+        "file": "1709.05395v1.pdf",
+        "title": "One Leak Will Sink A Ship: WebRTC IP Address Leaks",
+        "use": "ICE 후보와 브라우저 WebRTC API의 IP 주소 노출 위험을 메타데이터 보호와 P2P 제한 근거로 사용",
+    },
+    {
+        "file": "1908.05901v1.pdf",
+        "title": "Evaluating User Perception of Multi-Factor Authentication",
+        "use": "MFA는 단일 인증 실패를 줄이지만 사용자 수용성 문제가 있어 재시도 제한과 UX 설명이 필요",
+    },
+    {
+        "file": "2007.01059v1.pdf",
+        "title": "Zooming Into Video Conferencing Privacy and Security Threats",
+        "use": "공개 회의 캡처 이미지의 얼굴, 이름, 사용자명 재식별 위험을 링크/표시명/녹화 정책 근거로 사용",
+    },
+    {
+        "file": "2212.02740v2.pdf",
+        "title": "Stealthy Peers",
+        "use": "WebRTC 기반 peer-assisted delivery의 IP 노출, 오염, 자원 점유 위험을 P2P 제한과 TURN relay 정책 근거로 사용",
+    },
+    {
+        "file": "2406.11618v4.pdf",
+        "title": "SoK: Regular Expression Denial of Service",
+        "use": "정규식 기반 입력 검증이 ReDoS 공격면이 될 수 있어 정규식 길이/구조 검증 근거로 사용",
+    },
+    {
+        "file": "3498335.pdf",
+        "title": "Security and Privacy in Unified Communication",
+        "use": "UC 전반의 STRIDE/LINDDUN 위협과 완화책을 화상회의 보안 점검표의 상위 분류로 사용",
+    },
+    {
+        "file": "electronics-12-01247-v2.pdf",
+        "title": "Exploring Personal Data Processing in Video Conferencing Apps",
+        "use": "화상회의 앱의 제3자 데이터 전송과 개인정보 처리 고지 부족을 데이터 최소화/제3자 요청 차단 근거로 사용",
+    },
+    {
+        "file": "000000100869_20260512170757.pdf",
+        "title": "화상회의 시스템에서 타원곡선암호를 이용한 사용자 인증 및 그룹 키 합의 방식",
+        "use": "자원 제약 환경의 사용자 인증과 그룹 키 합의 필요성을 회의 epoch 키 갱신 근거로 사용",
+    },
+    {
+        "file": "팀6 - vuln-jwt-lab.pdf",
+        "title": "Towards a Threat Model and Security Analysis of Video Conferencing Systems",
+        "use": "화상회의 시스템 전용 STRIDE 위협 모델과 완화 전략의 기본 틀로 사용",
+    },
+)
+
 
 @dataclass(frozen=True)
 class DreadScore:
@@ -454,6 +507,7 @@ def compare_findings(
         },
         "matrix": matrix,
         "references": list(REFERENCE_BASIS),
+        "paper_evidence": list(PAPER_EVIDENCE),
     }
 
 
@@ -518,6 +572,48 @@ def sample_video_conference_stride_findings() -> List[StrideFinding]:
             description="행위 기록 부족 또는 민감 로그 접근통제 미흡",
             dread=DreadScore(3, 3, 2, 4, 3),
         ),
+        StrideFinding(
+            id="I-02",
+            component="WebRTC ICE 후보",
+            threat="Information Disclosure",
+            description="P2P/WebRTC 후보 수집 과정에서 사설/공인 IP 및 네트워크 위치 정보 노출",
+            dread=DreadScore(4, 4, 3, 4, 4),
+        ),
+        StrideFinding(
+            id="I-03",
+            component="회의 링크/화면 캡처",
+            threat="Information Disclosure",
+            description="공개 회의 링크, 캡처 이미지, 표시명, 얼굴 이미지의 재식별 및 교차 분석 위험",
+            dread=DreadScore(4, 4, 3, 5, 4),
+        ),
+        StrideFinding(
+            id="I-04",
+            component="분석/제3자 연동",
+            threat="Information Disclosure",
+            description="분석 SDK, 아바타, 캘린더, 파일 공유 등 외부 요청을 통한 개인정보 전송",
+            dread=DreadScore(3, 4, 3, 4, 4),
+        ),
+        StrideFinding(
+            id="S-02",
+            component="JWT/회의 권한",
+            threat="Spoofing",
+            description="회의방, 역할, 만료시간이 충분히 묶이지 않은 토큰의 재사용 또는 권한 혼동",
+            dread=DreadScore(4, 3, 3, 4, 3),
+        ),
+        StrideFinding(
+            id="D-02",
+            component="정규식 기반 입력 검증",
+            threat="Denial of Service",
+            description="복잡한 정규식 또는 과도한 입력으로 서버/클라이언트 자원 고갈",
+            dread=DreadScore(3, 4, 3, 4, 4),
+        ),
+        StrideFinding(
+            id="T-02",
+            component="P2P/peer-assisted 미디어 경로",
+            threat="Tampering",
+            description="신뢰하지 않는 피어가 미디어 조각 오염, 무임승차, 자원 점유를 유발",
+            dread=DreadScore(3, 3, 3, 4, 3),
+        ),
     ]
 
 
@@ -535,6 +631,20 @@ def render_markdown_report(summary: Dict) -> str:
     taxonomy_version = summary["taxonomy_version"]
     lines = [
         "# STRIDE-ZAP 취약점 탐지 비교 요약",
+        "",
+        "## 연구 주제",
+        "",
+        "화상회의 아키텍처 환경에서 STRIDE 위협 모델링과 OWASP ZAP의 "
+        "취약점 탐지 효과성 비교 분석",
+        "",
+        "## 검증 방법",
+        "",
+        "- 실험 A: 화상회의 아키텍처와 데이터 흐름을 기준으로 STRIDE 위협 모델링 수행",
+        "- 실험 B: 동일 대상에 대해 OWASP ZAP 동적 자동화 진단 수행",
+        "- 비교 기준: 실험 A/B 결과를 OWASP Top 10 카테고리로 매핑",
+        "- 분석 항목: 탐지 스펙트럼, 중복/단독 탐지 카테고리, 오탐률, 위험도 가중 점수",
+        "",
+        "## 정량 요약",
         "",
         f"- OWASP 기준: Top 10:{taxonomy_version}",
         f"- STRIDE 유효 탐지 건수: {summary['stride_total']} / 원자료 {summary['stride_total_raw']}",
@@ -555,6 +665,8 @@ def render_markdown_report(summary: Dict) -> str:
     time_lines = render_time_metrics(summary)
     if time_lines:
         lines.extend(["", "## 소요시간 기반 지표", *time_lines])
+
+    lines.extend(render_visualization(summary))
 
     lines.extend([
         "",
@@ -593,7 +705,49 @@ def render_markdown_report(summary: Dict) -> str:
     for reference in summary["references"]:
         lines.append(f"- {reference['name']}: {reference['use']} ({reference['url']})")
 
+    lines.extend([
+        "",
+        "## 논문 기반 보완 근거",
+        "",
+    ])
+    for paper in summary.get("paper_evidence", []):
+        lines.append(f"- {paper['title']} ({paper['file']}): {paper['use']}")
+
     return "\n".join(lines)
+
+
+def render_visualization(summary: Dict) -> List[str]:
+    """Markdown 보고서에 포함할 Mermaid 기반 그래프를 만든다."""
+    scope_counts = Counter(row["method_scope"] for row in summary["matrix"])
+    taxonomy_total = summary["taxonomy_total_categories"]
+    return [
+        "",
+        "## 시각화 자료",
+        "",
+        "### OWASP Top 10 커버리지",
+        "",
+        "```mermaid",
+        "xychart-beta",
+        "    title \"OWASP Top 10 탐지 커버리지\"",
+        "    x-axis [\"STRIDE\", \"ZAP\", \"Combined\"]",
+        f"    y-axis \"Categories\" 0 --> {taxonomy_total}",
+        "    bar ["
+        f"{summary['stride_owasp_coverage']}, "
+        f"{summary['zap_owasp_coverage']}, "
+        f"{summary['combined_owasp_coverage']}"
+        "]",
+        "```",
+        "",
+        "### 탐지 범위 분포",
+        "",
+        "```mermaid",
+        "pie title OWASP 카테고리별 탐지 범위",
+        f"    \"Both\" : {scope_counts.get('Both', 0)}",
+        f"    \"STRIDE only\" : {scope_counts.get('STRIDE only', 0)}",
+        f"    \"ZAP only\" : {scope_counts.get('ZAP only', 0)}",
+        f"    \"None\" : {scope_counts.get('None', 0)}",
+        "```",
+    ]
 
 
 def render_time_metrics(summary: Dict) -> List[str]:

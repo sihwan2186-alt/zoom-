@@ -1,11 +1,12 @@
 """
 데이터 유출 방지 모듈
-Zoom 취약점 보완: 메타데이터 보호, 데이터 마스킹
+화상회의 보안 보완: 메타데이터 보호, 데이터 마스킹
 """
 import re
 import hashlib
 import json
-from datetime import datetime
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import Dict
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
@@ -17,7 +18,8 @@ class MetadataProtection:
         self.sensitive_fields = [
             'ip_address', 'email', 'phone', 'real_name',
             'meeting_id', 'user_id', 'session_id', 'jwt', 'token',
-            'auth_token', 'password', 'secret'
+            'auth_token', 'password', 'secret', 'room_name', 'display_name',
+            'face_image', 'avatar_url', 'device_id', 'ice_candidate'
         ]
 
     def anonymize_user_data(self, user_data: Dict) -> Dict:
@@ -43,9 +45,16 @@ class MetadataProtection:
             phone = anonymized['phone']
             anonymized['phone'] = re.sub(r'\d', '*', phone[:-4]) + phone[-4:]
 
-        for key in ('user_id', 'session_id', 'meeting_id'):
+        if 'display_name' in anonymized:
+            anonymized['display_name'] = self.mask_display_name(str(anonymized['display_name']))
+
+        for key in ('user_id', 'session_id', 'meeting_id', 'room_name', 'device_id'):
             if key in anonymized:
                 anonymized[key] = self.hash_sensitive_data(str(anonymized[key]))[:12]
+
+        for key in ('face_image', 'avatar_url', 'ice_candidate'):
+            if key in anonymized:
+                anonymized[key] = "[redacted]"
 
         return anonymized
 
@@ -62,6 +71,14 @@ class MetadataProtection:
     def hash_sensitive_data(self, data: str) -> str:
         """민감 데이터 해시화"""
         return hashlib.sha256(data.encode("utf-8")).hexdigest()
+
+    def mask_display_name(self, display_name: str) -> str:
+        """공개 캡처 이미지에서 사용자명 재식별 위험을 낮추기 위한 표시명 마스킹."""
+        if not display_name:
+            return ""
+        if len(display_name) <= 2:
+            return display_name[0] + "*"
+        return display_name[0] + "***" + display_name[-1]
 
     def redact_url(self, url: str) -> str:
         """로그에 남는 URL에서 JWT, token, password 등 민감 쿼리를 제거한다."""
@@ -87,6 +104,23 @@ class MetadataProtection:
             else:
                 result[key] = value
         return result
+
+    def redact_meeting_link(self, link: str) -> str:
+        """회의 URL의 방 이름과 초대 토큰을 로그/논문 산출물에서 제거한다."""
+        split = urlsplit(link)
+        path_parts = [part for part in split.path.split("/") if part]
+        if path_parts:
+            path_parts[-1] = "room-" + self.hash_sensitive_data(path_parts[-1])[:10]
+        return urlunsplit((
+            split.scheme,
+            split.netloc,
+            "/" + "/".join(path_parts) if path_parts else split.path,
+            urlencode([
+                (key, "redacted" if key.lower() in set(self.sensitive_fields) else value)
+                for key, value in parse_qsl(split.query, keep_blank_values=True)
+            ]),
+            "",
+        ))
 
 
 class DataMasking:
@@ -156,6 +190,9 @@ class MeetingDataProtection:
             if text_field in protected and isinstance(protected[text_field], str):
                 protected[text_field] = self.data_masking.mask_all(protected[text_field])
 
+        if 'meeting_link' in protected:
+            protected['meeting_link'] = self.metadata_protection.redact_meeting_link(protected['meeting_link'])
+
         # 메타데이터 제거
         protected = self.metadata_protection.remove_metadata(protected)
 
@@ -172,7 +209,53 @@ class MeetingDataProtection:
             'meeting_id_hash': self.metadata_protection.hash_sensitive_data(meeting_id)[:12],
             'temporary_token': token,
             'expires_at': expiry,
-            'url': f"https://jitsi.meet/temp/{token}"
+            'url': f"https://conference.example/temp/{token}"
+        }
+
+
+@dataclass
+class RetentionPolicy:
+    """녹화/채팅/로그별 보존기간을 명시해 데이터 최소화를 검증한다."""
+    chat_days: int = 30
+    recording_days: int = 7
+    audit_log_days: int = 90
+
+    def expiry_for(self, data_type: str, created_at: datetime | None = None) -> datetime:
+        created_at = created_at or datetime.now()
+        days = {
+            "chat": self.chat_days,
+            "recording": self.recording_days,
+            "audit_log": self.audit_log_days,
+        }.get(data_type, self.chat_days)
+        return created_at + timedelta(days=days)
+
+    def should_delete(self, data_type: str, created_at: datetime, now: datetime | None = None) -> bool:
+        return (now or datetime.now()) >= self.expiry_for(data_type, created_at)
+
+
+class VideoConferencePrivacyAdvisor:
+    """WebRTC IP leak, 제3자 전송, 공개 회의 링크 위험을 낮추는 설정 제안."""
+
+    def hardened_embed_config(self, high_privacy: bool = True) -> Dict:
+        config = {
+            "disableThirdPartyRequests": True,
+            "analytics": {"disabled": True, "obfuscateRoomName": True},
+            "prejoinConfig": {"enabled": True},
+            "enableInsecureRoomNameWarning": True,
+            "localRecording": {"disable": False, "notifyAllParticipants": True},
+            "recordings": {"requireConsent": True, "showPrejoinWarning": True},
+            "p2p": {"enabled": not high_privacy},
+        }
+        if high_privacy:
+            config["forceTurnRelay"] = True
+        return config
+
+    def room_name_policy(self) -> Dict:
+        return {
+            "min_length": 12,
+            "allowed_pattern": "^[A-Za-z0-9_-]+$",
+            "avoid_public_social_posting": True,
+            "require_lobby_or_password": True,
         }
 
 
@@ -213,3 +296,6 @@ if __name__ == "__main__":
     }
     protected = mdp.protect_meeting_record(meeting_data)
     print("보호된 회의 데이터:", json.dumps(protected, indent=2, ensure_ascii=False))
+
+    advisor = VideoConferencePrivacyAdvisor()
+    print("권장 화상회의 개인정보 설정:", json.dumps(advisor.hardened_embed_config(), indent=2, ensure_ascii=False))

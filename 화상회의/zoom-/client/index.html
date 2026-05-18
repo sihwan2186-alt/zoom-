@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>zoom- 보안 화상회의 (Jitsi Meet 기반)</title>
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; frame-src https://meet.jit.si; connect-src 'self' https://meet.jit.si wss://meet.jit.si; img-src 'self' data: https://meet.jit.si; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';">
+    <title>보안 화상회의 실습</title>
     <style>
         * {
             margin: 0;
@@ -122,7 +124,7 @@
             margin-top: 30px;
         }
         
-        #jitsi-frame {
+        #conference-frame {
             width: 100%;
             height: 600px;
             border: none;
@@ -216,8 +218,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>🔒 zoom- 보안 화상회의</h1>
-            <p class="subtitle">Jitsi Meet 기반 보안 강화 플랫폼</p>
+            <h1>🔒 보안 화상회의</h1>
+            <p class="subtitle">WebRTC 기반 화상회의 보안 강화 실습</p>
         </header>
         
         <!-- 로그인 화면 -->
@@ -325,8 +327,12 @@
                 </ul>
             </div>
             
-            <!-- Jitsi Meet 임베드 -->
-            <iframe id="jitsi-frame" allow="camera; microphone; fullscreen; display-capture"></iframe>
+            <!-- 외부 WebRTC 회의 엔진 임베드 -->
+            <iframe
+                id="conference-frame"
+                allow="camera; microphone; fullscreen; display-capture"
+                referrerpolicy="no-referrer"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation allow-modals allow-downloads"></iframe>
             
             <!-- 보안 정보 -->
             <div class="security-info">
@@ -343,7 +349,7 @@
                 <div class="security-badge">
                     <div class="icon">🛡️</div>
                     <div class="label">E2EE</div>
-                    <div class="value">활성화</div>
+                    <div class="value">선택 적용</div>
                 </div>
                 <div class="security-badge">
                     <div class="icon">✅</div>
@@ -355,6 +361,43 @@
     </div>
     
     <script>
+        const EMBED_PROVIDER_DOMAIN = 'meet.jit.si';
+        const MEETING_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_-]{7,63}$/;
+
+        function validateMeetingId(meetingId) {
+            return MEETING_ID_PATTERN.test(meetingId);
+        }
+
+        function generateSecureMeetingId() {
+            const bytes = new Uint8Array(16);
+            window.crypto.getRandomValues(bytes);
+            const randomId = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+
+            return `secure-${randomId}`;
+        }
+
+        function buildConferenceUrl(meetingId, options = {}) {
+            const params = new URLSearchParams();
+
+            params.set('config.prejoinConfig.enabled', 'true');
+            params.set('config.startWithAudioMuted', 'true');
+            params.set('config.startWithVideoMuted', 'true');
+            params.set('config.disableThirdPartyRequests', 'true');
+            params.set('config.analytics.disabled', 'true');
+            params.set('config.analytics.obfuscateRoomName', 'true');
+            params.set('config.enableInsecureRoomNameWarning', 'true');
+            params.set('config.p2p.enabled', 'false');
+
+            if (options.e2eeEnabled) {
+                params.set('config.e2ee.enabled', 'true');
+            }
+            if (options.lobbyEnabled) {
+                params.set('config.enableLobby', 'true');
+            }
+
+            return `https://${EMBED_PROVIDER_DOMAIN}/${encodeURIComponent(meetingId)}#${params.toString()}`;
+        }
+
         // 탭 전환
         function showTab(tabName) {
             // 탭 버튼
@@ -382,7 +425,7 @@
             }
             
             // 실제 구현에서는 서버와 통신
-            console.log('로그인 시도:', { username, mfaEnabled });
+            console.log('로그인 시도:', { mfaEnabled });
             
             // 회의실 화면으로 전환
             document.getElementById('login-screen').style.display = 'none';
@@ -401,7 +444,7 @@
             }
             
             // 실제 구현에서는 서버와 통신
-            console.log('회원가입:', { username, email });
+            console.log('회원가입 요청');
             alert('회원가입이 완료되었습니다.');
         }
         
@@ -409,16 +452,15 @@
         function joinMeeting() {
             const meetingId = document.getElementById('meeting-id').value;
             
-            if (!meetingId) {
-                alert('회의室 ID를 입력해주세요.');
+            if (!meetingId || !validateMeetingId(meetingId)) {
+                alert('회의室 ID는 8~64자의 영문/숫자/하이픈/밑줄만 사용할 수 있습니다.');
                 return;
             }
             
-            // Jitsi Meet URL 구성
-            const jitsiUrl = `https://meet.jit.si/${meetingId}#config.prejoinPageEnabled=false&config.startWithAudioMuted=true&config.startWithVideoMuted=true`;
+            const conferenceUrl = buildConferenceUrl(meetingId);
             
-            document.getElementById('jitsi-frame').src = jitsiUrl;
-            console.log('회의 참여:', meetingId);
+            document.getElementById('conference-frame').src = conferenceUrl;
+            console.log('회의 참여 요청');
         }
         
         // 회의 생성
@@ -432,19 +474,12 @@
                 return;
             }
             
-            // 고유 회의室 ID 생성
-            const meetingId = 'secure-' + Math.random().toString(36).substr(2, 9);
+            const meetingId = generateSecureMeetingId();
             
-            // Jitsi Meet URL 구성 (보안 옵션 포함)
-            let jitsiUrl = `https://meet.jit.si/${meetingId}`;
-            jitsiUrl += '#config.prejoinPageEnabled=false';
+            const conferenceUrl = buildConferenceUrl(meetingId, { e2eeEnabled, lobbyEnabled });
             
-            if (lobbyEnabled) {
-                jitsiUrl += '&config.enableLobby=true';
-            }
-            
-            document.getElementById('jitsi-frame').src = jitsiUrl;
-            console.log('회의 생성:', { meetingId, meetingName, e2eeEnabled, lobbyEnabled });
+            document.getElementById('conference-frame').src = conferenceUrl;
+            console.log('회의 생성 요청:', { e2eeEnabled, lobbyEnabled });
         }
         
         // 보안 모듈 통합 (Python/Java와 연동 시)

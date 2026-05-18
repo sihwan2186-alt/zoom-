@@ -1,6 +1,6 @@
 """
 세션 관리 보안 모듈
-Zoom 취약점 보완: 안전한 세션 생성, 갱신, 폐기
+화상회의 보안 보완: 안전한 세션 생성, 갱신, 폐기
 """
 import hashlib
 import hmac
@@ -17,10 +17,13 @@ class Session:
     session_id: str
     user_id: str
     created_at: float
+    last_refreshed_at: float
     last_accessed: float
     expires_at: float
+    absolute_expires_at: float
     ip_address: str
     user_agent: str
+    csrf_token: str
     is_active: bool = True
     refresh_count: int = 0
 
@@ -30,6 +33,7 @@ class SessionManager:
 
     SESSION_TIMEOUT = 3600  # 1시간
     IDLE_TIMEOUT = 1800  # 30분
+    ABSOLUTE_SESSION_TIMEOUT = 28800  # 8시간
     REFRESH_INTERVAL = 1800  # 30분
     MAX_SESSIONS_PER_USER = 5
 
@@ -54,10 +58,13 @@ class SessionManager:
             session_id=self._generate_session_id(),
             user_id=user_id,
             created_at=current_time,
+            last_refreshed_at=current_time,
             last_accessed=current_time,
             expires_at=current_time + self.SESSION_TIMEOUT,
+            absolute_expires_at=current_time + self.ABSOLUTE_SESSION_TIMEOUT,
             ip_address=ip_address,
             user_agent=user_agent,
+            csrf_token=self._generate_csrf_token(),
         )
         self.sessions[session.session_id] = session
         self._audit("session_created", session.session_id, user_id)
@@ -83,6 +90,11 @@ class SessionManager:
             self.destroy_session(session_id)
             return False, None
 
+        if current_time > session.absolute_expires_at:
+            self._audit("session_absolute_timeout", session_id, session.user_id)
+            self.destroy_session(session_id)
+            return False, None
+
         if current_time - session.last_accessed > self.IDLE_TIMEOUT:
             self._audit("session_idle_timeout", session_id, session.user_id)
             self.destroy_session(session_id)
@@ -102,9 +114,10 @@ class SessionManager:
 
         session.last_accessed = current_time
 
-        if current_time - session.created_at > self.REFRESH_INTERVAL:
-            session.created_at = current_time
-            session.expires_at = current_time + self.SESSION_TIMEOUT
+        if current_time - session.last_refreshed_at > self.REFRESH_INTERVAL:
+            session.expires_at = min(current_time + self.SESSION_TIMEOUT, session.absolute_expires_at)
+            session.last_refreshed_at = current_time
+            session.csrf_token = self._generate_csrf_token()
             session.refresh_count += 1
             self._audit("session_refreshed", session_id, session.user_id)
 
@@ -115,10 +128,18 @@ class SessionManager:
         if not session_id or not self._verify_session_id_signature(session_id):
             return False
         session = self.sessions.get(session_id)
-        if not session or not session.is_active or time.time() > session.expires_at:
+        current_time = time.time()
+        if (
+            not session
+            or not session.is_active
+            or current_time > session.expires_at
+            or current_time > session.absolute_expires_at
+        ):
             return False
-        session.last_accessed = time.time()
-        session.expires_at = time.time() + self.SESSION_TIMEOUT
+        session.last_accessed = current_time
+        session.expires_at = min(current_time + self.SESSION_TIMEOUT, session.absolute_expires_at)
+        session.last_refreshed_at = current_time
+        session.csrf_token = self._generate_csrf_token()
         session.refresh_count += 1
         self._audit("session_refreshed", session_id, session.user_id)
         return True
@@ -148,7 +169,7 @@ class SessionManager:
         current_time = time.time()
         expired = [
             sid for sid, session in self.sessions.items()
-            if current_time > session.expires_at
+            if current_time > session.expires_at or current_time > session.absolute_expires_at
         ]
         for sid in expired:
             self.destroy_session(sid)
@@ -163,17 +184,29 @@ class SessionManager:
             "session_id": session_id[:16] + "...",
             "user_id": session.user_id,
             "created_at": datetime.fromtimestamp(session.created_at).isoformat(),
+            "last_refreshed_at": datetime.fromtimestamp(session.last_refreshed_at).isoformat(),
             "last_accessed": datetime.fromtimestamp(session.last_accessed).isoformat(),
             "expires_at": datetime.fromtimestamp(session.expires_at).isoformat(),
+            "absolute_expires_at": datetime.fromtimestamp(session.absolute_expires_at).isoformat(),
             "idle_expires_at": datetime.fromtimestamp(session.last_accessed + self.IDLE_TIMEOUT).isoformat(),
+            "csrf_token": session.csrf_token[:12] + "...",
             "is_active": session.is_active,
             "refresh_count": session.refresh_count,
         }
 
+    def validate_csrf_token(self, session_id: str, csrf_token: str) -> bool:
+        """상태 변경 요청에 포함된 CSRF 토큰을 세션과 비교한다."""
+        if not session_id or not csrf_token or not self._verify_session_id_signature(session_id):
+            return False
+        session = self.sessions.get(session_id)
+        if not session or not session.is_active:
+            return False
+        return hmac.compare_digest(session.csrf_token, csrf_token)
+
     def build_session_cookie_header(
         self,
         session_id: str,
-        cookie_name: str = "vc_session",
+        cookie_name: str = "__Host-vc_session",
         max_age: Optional[int] = None,
         same_site: str = "Strict",
     ) -> str:
@@ -209,6 +242,9 @@ class SessionManager:
         raw = f"{random_part}.{timestamp}"
         expected = hmac.new(self.secret_key, raw.encode(), hashlib.sha256).hexdigest()[:32]
         return hmac.compare_digest(signature, expected)
+
+    def _generate_csrf_token(self) -> str:
+        return secrets.token_urlsafe(32)
 
     def _audit(self, event: str, session_id: str, user_id: str, detail: str = "") -> None:
         """A09 로깅/모니터링 실패 항목을 검증할 수 있는 감사 로그."""

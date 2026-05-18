@@ -1,6 +1,6 @@
 """
 버퍼 오버플로우 탐지 모듈
-Zoom 취약점 보완: 입력 검증, 샌드박스 실행
+화상회의 보안 보완: 입력 검증, ReDoS 방어, 샌드박스 실행
 """
 import html
 import re
@@ -37,6 +37,14 @@ class InputValidation:
     MAX_INPUT_LENGTH = 10000
     MAX_STRING_LENGTH = 1000
     MAX_ARRAY_LENGTH = 100
+    MAX_REGEX_LENGTH = 256
+
+    # ReDoS 위험이 큰 중첩 반복/모호한 반복 패턴의 최소 휴리스틱.
+    REDOS_RISK_PATTERNS = [
+        re.compile(r'\((?:[^()\\]|\\.)*[+*](?:[^()\\]|\\.)*\)[+*?]'),
+        re.compile(r'\((?:[^()\\]|\\.)*\|(?:[^()\\]|\\.)*\)[+*?]'),
+        re.compile(r'(?:\.\*|\.\+){2,}'),
+    ]
 
     def __init__(self):
         self.compiled_patterns = [
@@ -97,6 +105,30 @@ class InputValidation:
         if parsed.hostname not in allowed_hosts:
             return ValidationResult(False, "허용되지 않은 호스트는 스캔할 수 없습니다")
         return ValidationResult(True, sanitized_input=target_url)
+
+    def validate_regex_pattern(self, pattern: str) -> ValidationResult:
+        """정규식 기반 필터가 ReDoS 입력점이 되지 않도록 사전 검증한다."""
+        if not isinstance(pattern, str):
+            return ValidationResult(False, "정규식은 문자열이어야 합니다")
+        if len(pattern) > self.MAX_REGEX_LENGTH:
+            return ValidationResult(False, f"정규식 길이 초과 (최대: {self.MAX_REGEX_LENGTH})")
+        for risky in self.REDOS_RISK_PATTERNS:
+            if risky.search(pattern):
+                return ValidationResult(False, "ReDoS 위험이 큰 정규식 구조가 탐지되었습니다")
+        try:
+            re.compile(pattern)
+        except re.error as exc:
+            return ValidationResult(False, f"정규식 컴파일 실패: {exc}")
+        return ValidationResult(True, sanitized_input=pattern)
+
+    def safe_regex_search(self, pattern: str, text: str) -> bool:
+        """허용된 정규식과 길이 제한 입력에 대해서만 검색을 수행한다."""
+        validation = self.validate_regex_pattern(pattern)
+        if not validation.is_valid:
+            raise ValueError(validation.error_message)
+        if not self.validate_string_length(text, self.MAX_INPUT_LENGTH):
+            raise ValueError("검색 대상 문자열이 너무 깁니다")
+        return re.search(pattern, text) is not None
 
     def sanitize_input(self, user_input: str) -> str:
         """입력 정제"""
@@ -217,3 +249,6 @@ if __name__ == "__main__":
     sandbox = SandboxExecution()
     success, result = sandbox.execute_in_sandbox("print('hello')", "test")
     print(f"샌드박스 실행: {result}")
+
+    regex_result = iv.validate_regex_pattern(r"(a+)+$")
+    print(f"ReDoS 정규식 검증: {regex_result.is_valid}, {regex_result.error_message}")
