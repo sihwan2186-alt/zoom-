@@ -1,5 +1,6 @@
 .tmp_classes/
 .tmp_pdf/
 .tmp_pdf_text/
+reports/
 __pycache__/
 *.py[cod]

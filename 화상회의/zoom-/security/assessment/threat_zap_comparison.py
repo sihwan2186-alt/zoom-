@@ -6,6 +6,7 @@ STRIDE 위협 모델링과 OWASP ZAP 동적 진단 결과 비교 유틸리티.
 취약점 탐지 효과성 비교 분석
 """
 import argparse
+import csv
 import json
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
@@ -365,9 +366,113 @@ def parse_id_set(value: str) -> Set[str]:
     return {item.strip() for item in value.split(",") if item.strip()}
 
 
+def parse_owasp_categories(value: object) -> Set[str]:
+    if not value:
+        return set()
+    if isinstance(value, list):
+        raw_items = [str(item).strip() for item in value if str(item).strip()]
+    elif isinstance(value, set):
+        raw_items = [str(item).strip() for item in value if str(item).strip()]
+    else:
+        normalized = str(value).replace(";", ",")
+        raw_items = [item.strip() for item in normalized.split(",") if item.strip()]
+
+    categories = set()
+    for item in raw_items:
+        first_token = item.split()[0].strip()
+        categories.add(first_token if first_token.startswith("A") else item)
+    return categories
+
+
+def normalize_stride_threat(value: object) -> str:
+    threat = str(value or "").strip()
+    aliases = {
+        "s": "Spoofing",
+        "spoofing": "Spoofing",
+        "t": "Tampering",
+        "tampering": "Tampering",
+        "r": "Repudiation",
+        "repudiation": "Repudiation",
+        "i": "Information Disclosure",
+        "information disclosure": "Information Disclosure",
+        "information_disclosure": "Information Disclosure",
+        "d": "Denial of Service",
+        "dos": "Denial of Service",
+        "denial of service": "Denial of Service",
+        "denial_of_service": "Denial of Service",
+        "e": "Elevation of Privilege",
+        "elevation of privilege": "Elevation of Privilege",
+        "elevation_of_privilege": "Elevation of Privilege",
+    }
+    normalized = aliases.get(threat.lower())
+    if not normalized:
+        supported = ", ".join(STRIDE_TO_OWASP[DEFAULT_TAXONOMY_VERSION])
+        raise ValueError(f"Unsupported STRIDE threat '{threat}'. Supported: {supported}")
+    return normalized
+
+
+def parse_dread_score(row: Dict[str, object]) -> DreadScore:
+    def score(*keys: str, default: int = 3) -> int:
+        for key in keys:
+            value = row.get(key)
+            if value not in (None, ""):
+                numeric = int(float(str(value).strip()))
+                if numeric < 1 or numeric > 5:
+                    raise ValueError(f"DREAD score '{key}' must be between 1 and 5: {numeric}")
+                return numeric
+        return default
+
+    return DreadScore(
+        damage=score("damage", "Damage"),
+        reproducibility=score("reproducibility", "Reproducibility"),
+        exploitability=score("exploitability", "Exploitability"),
+        affected_users=score("affected_users", "affectedUsers", "Affected Users", "AffectedUsers"),
+        discoverability=score("discoverability", "Discoverability"),
+    )
+
+
+def stride_finding_from_row(row: Dict[str, object], index: int) -> StrideFinding:
+    finding_id = str(row.get("id") or row.get("ID") or f"CUSTOM-{index:02d}").strip()
+    component = str(row.get("component") or row.get("Component") or "미지정").strip()
+    threat = normalize_stride_threat(row.get("threat") or row.get("stride") or row.get("STRIDE"))
+    description = str(row.get("description") or row.get("threat_description") or row.get("위협") or "").strip()
+    if not description:
+        description = f"{component} 영역의 {threat} 위협"
+
+    return StrideFinding(
+        id=finding_id,
+        component=component,
+        threat=threat,
+        description=description,
+        dread=parse_dread_score(row),
+        owasp_categories=parse_owasp_categories(
+            row.get("owasp_categories") or row.get("owasp") or row.get("OWASP Top 10")
+        ),
+    )
+
+
+def load_stride_json(report_path: str | Path) -> List[StrideFinding]:
+    """사용자가 작성한 STRIDE JSON 파일을 읽는다."""
+    data = json.loads(Path(report_path).read_text(encoding="utf-8-sig"))
+    if isinstance(data, dict):
+        raw_findings = data.get("findings") or data.get("stride_findings") or data.get("items") or []
+    else:
+        raw_findings = data
+    if not isinstance(raw_findings, list):
+        raise ValueError("STRIDE JSON must be a list or contain a 'findings' list.")
+    return [stride_finding_from_row(row, index + 1) for index, row in enumerate(raw_findings)]
+
+
+def load_stride_csv(report_path: str | Path) -> List[StrideFinding]:
+    """사용자가 작성한 STRIDE CSV 파일을 읽는다."""
+    with Path(report_path).open("r", encoding="utf-8-sig", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    return [stride_finding_from_row(row, index + 1) for index, row in enumerate(rows)]
+
+
 def load_zap_json(report_path: str | Path) -> List[ZapAlert]:
     """ZAP JSON 리포트에서 alert 목록을 읽는다."""
-    data = json.loads(Path(report_path).read_text(encoding="utf-8"))
+    data = json.loads(Path(report_path).read_text(encoding="utf-8-sig"))
     raw_alerts = data.get("site", [])
     if isinstance(raw_alerts, list):
         alerts = []
@@ -798,6 +903,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="OWASP ZAP JSON report path. If omitted, built-in sample alerts are used.",
     )
     parser.add_argument(
+        "--stride-json",
+        type=Path,
+        help="Custom STRIDE findings JSON path. If omitted, built-in sample findings are used.",
+    )
+    parser.add_argument(
+        "--stride-csv",
+        type=Path,
+        help="Custom STRIDE findings CSV path. Cannot be used with --stride-json.",
+    )
+    parser.add_argument(
         "--taxonomy",
         choices=sorted(OWASP_TAXONOMIES),
         default=DEFAULT_TAXONOMY_VERSION,
@@ -832,9 +947,19 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.stride_json and args.stride_csv:
+        raise SystemExit("--stride-json and --stride-csv cannot be used together.")
+
+    if args.stride_json:
+        stride_findings = load_stride_json(args.stride_json)
+    elif args.stride_csv:
+        stride_findings = load_stride_csv(args.stride_csv)
+    else:
+        stride_findings = sample_video_conference_stride_findings()
+
     zap_alerts = load_zap_json(args.zap_json) if args.zap_json else sample_zap_alerts()
     summary = compare_findings(
-        sample_video_conference_stride_findings(),
+        stride_findings,
         zap_alerts,
         taxonomy_version=args.taxonomy,
         stride_minutes=args.stride_minutes,
