@@ -1,0 +1,511 @@
+{
+	"@programName": "ZAP",
+	"@version": "2.17.0",
+	"@generated": "Thu, 21 May 2026 06:47:28",
+	"created": "2026-05-21T06:47:28.363247068Z",
+	"insights":[
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8082",
+			"key": "insight.code.2xx",
+			"description": "Percentage of responses with status code 2xx",
+			"statistic": "50"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8082",
+			"key": "insight.code.4xx",
+			"description": "Percentage of responses with status code 4xx",
+			"statistic": "50"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8082",
+			"key": "insight.endpoint.ctype.text/html",
+			"description": "Percentage of endpoints with content type text/html",
+			"statistic": "100"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8082",
+			"key": "insight.endpoint.method.GET",
+			"description": "Percentage of endpoints with method GET",
+			"statistic": "100"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8082",
+			"key": "insight.endpoint.total",
+			"description": "Count of total endpoints",
+			"statistic": "3"
+		}
+	],
+	"site":[ 
+		{
+			"@name": "http://host.docker.internal:8082",
+			"@host": "host.docker.internal",
+			"@port": "8082",
+			"@ssl": "false",
+			"alerts": [ 
+				{
+					"pluginid": "10055",
+					"alertRef": "10055-13",
+					"alert": "CSP: Failure to Define Directive with No Fallback",
+					"name": "CSP: Failure to Define Directive with No Fallback",
+					"riskcode": "2",
+					"confidence": "3",
+					"riskdesc": "Medium (High)",
+					"desc": "<p>The Content Security Policy fails to define one of the directives that has no fallback. Missing/excluding them is the same as allowing anything.</p>",
+					"instances":[ 
+						{
+							"id": "6",
+							"uri": "http://host.docker.internal:8082/",
+							"nodeName": "http:\/\/host.docker.internal:8082\/",
+							"method": "GET",
+							"param": "content-security-policy",
+							"attack": "",
+							"evidence": "default-src 'self'; frame-src https://meet.jit.si; connect-src 'self' https://meet.jit.si wss://meet.jit.si; img-src 'self' data: https://meet.jit.si; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';",
+							"otherinfo": "The directive(s): form-action is/are among the directives that do not fallback to default-src."
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>Ensure that your web server, application server, load balancer, etc. is properly configured to set the Content-Security-Policy header.</p>",
+					"otherinfo": "<p>The directive(s): form-action is/are among the directives that do not fallback to default-src.</p>",
+					"reference": "<p>https://www.w3.org/TR/CSP/</p><p>https://caniuse.com/#search=content+security+policy</p><p>https://content-security-policy.com/</p><p>https://github.com/HtmlUnit/htmlunit-csp</p><p>https://web.dev/articles/csp#resource-options</p>",
+					"cweid": "693",
+					"wascid": "15",
+					"sourceid": "1"
+				},
+				{
+					"pluginid": "10055",
+					"alertRef": "10055-5",
+					"alert": "CSP: script-src unsafe-inline",
+					"name": "CSP: script-src unsafe-inline",
+					"riskcode": "2",
+					"confidence": "3",
+					"riskdesc": "Medium (High)",
+					"desc": "<p>Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks. Including (but not limited to) Cross Site Scripting (XSS), and data injection attacks. These attacks are used for everything from data theft to site defacement or distribution of malware. CSP provides a set of standard HTTP headers that allow website owners to declare approved sources of content that browsers should be allowed to load on that page \u2014 covered types are JavaScript, CSS, HTML frames, fonts, images and embeddable objects such as Java applets, ActiveX, audio and video files.</p>",
+					"instances":[ 
+						{
+							"id": "10",
+							"uri": "http://host.docker.internal:8082/",
+							"nodeName": "http:\/\/host.docker.internal:8082\/",
+							"method": "GET",
+							"param": "Content-Security-Policy",
+							"attack": "",
+							"evidence": "default-src 'self'; frame-src https://meet.jit.si; connect-src 'self' https://meet.jit.si wss://meet.jit.si; img-src 'self' data: https://meet.jit.si; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';",
+							"otherinfo": "script-src includes unsafe-inline."
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>Ensure that your web server, application server, load balancer, etc. is properly configured to set the Content-Security-Policy header.</p>",
+					"otherinfo": "<p>script-src includes unsafe-inline.</p>",
+					"reference": "<p>https://www.w3.org/TR/CSP/</p><p>https://caniuse.com/#search=content+security+policy</p><p>https://content-security-policy.com/</p><p>https://github.com/HtmlUnit/htmlunit-csp</p><p>https://web.dev/articles/csp#resource-options</p>",
+					"cweid": "693",
+					"wascid": "15",
+					"sourceid": "1"
+				},
+				{
+					"pluginid": "10055",
+					"alertRef": "10055-6",
+					"alert": "CSP: style-src unsafe-inline",
+					"name": "CSP: style-src unsafe-inline",
+					"riskcode": "2",
+					"confidence": "3",
+					"riskdesc": "Medium (High)",
+					"desc": "<p>Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks. Including (but not limited to) Cross Site Scripting (XSS), and data injection attacks. These attacks are used for everything from data theft to site defacement or distribution of malware. CSP provides a set of standard HTTP headers that allow website owners to declare approved sources of content that browsers should be allowed to load on that page \u2014 covered types are JavaScript, CSS, HTML frames, fonts, images and embeddable objects such as Java applets, ActiveX, audio and video files.</p>",
+					"instances":[ 
+						{
+							"id": "11",
+							"uri": "http://host.docker.internal:8082/",
+							"nodeName": "http:\/\/host.docker.internal:8082\/",
+							"method": "GET",
+							"param": "Content-Security-Policy",
+							"attack": "",
+							"evidence": "default-src 'self'; frame-src https://meet.jit.si; connect-src 'self' https://meet.jit.si wss://meet.jit.si; img-src 'self' data: https://meet.jit.si; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';",
+							"otherinfo": "style-src includes unsafe-inline."
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>Ensure that your web server, application server, load balancer, etc. is properly configured to set the Content-Security-Policy header.</p>",
+					"otherinfo": "<p>style-src includes unsafe-inline.</p>",
+					"reference": "<p>https://www.w3.org/TR/CSP/</p><p>https://caniuse.com/#search=content+security+policy</p><p>https://content-security-policy.com/</p><p>https://github.com/HtmlUnit/htmlunit-csp</p><p>https://web.dev/articles/csp#resource-options</p>",
+					"cweid": "693",
+					"wascid": "15",
+					"sourceid": "1"
+				},
+				{
+					"pluginid": "10038",
+					"alertRef": "10038-1",
+					"alert": "Content Security Policy (CSP) Header Not Set",
+					"name": "Content Security Policy (CSP) Header Not Set",
+					"riskcode": "2",
+					"confidence": "3",
+					"riskdesc": "Medium (High)",
+					"desc": "<p>Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks, including Cross Site Scripting (XSS) and data injection attacks. These attacks are used for everything from data theft to site defacement or distribution of malware. CSP provides a set of standard HTTP headers that allow website owners to declare approved sources of content that browsers should be allowed to load on that page \u2014 covered types are JavaScript, CSS, HTML frames, fonts, images and embeddable objects such as Java applets, ActiveX, audio and video files.</p>",
+					"instances":[ 
+						{
+							"id": "0",
+							"uri": "http://host.docker.internal:8082/robots.txt",
+							"nodeName": "http:\/\/host.docker.internal:8082\/robots.txt",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>Ensure that your web server, application server, load balancer, etc. is configured to set the Content-Security-Policy header.</p>",
+					"otherinfo": "",
+					"reference": "<p>https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP</p><p>https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html</p><p>https://www.w3.org/TR/CSP/</p><p>https://w3c.github.io/webappsec-csp/</p><p>https://web.dev/articles/csp</p><p>https://caniuse.com/#feat=contentsecuritypolicy</p><p>https://content-security-policy.com/</p>",
+					"cweid": "693",
+					"wascid": "15",
+					"sourceid": "6"
+				},
+				{
+					"pluginid": "10020",
+					"alertRef": "10020-1",
+					"alert": "Missing Anti-clickjacking Header",
+					"name": "Missing Anti-clickjacking Header",
+					"riskcode": "2",
+					"confidence": "2",
+					"riskdesc": "Medium (Medium)",
+					"desc": "<p>The response does not protect against 'ClickJacking' attacks. It should include either Content-Security-Policy with 'frame-ancestors' directive or X-Frame-Options.</p>",
+					"instances":[ 
+						{
+							"id": "2",
+							"uri": "http://host.docker.internal:8082/",
+							"nodeName": "http:\/\/host.docker.internal:8082\/",
+							"method": "GET",
+							"param": "x-frame-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>Modern Web browsers support the Content-Security-Policy and X-Frame-Options HTTP headers. Ensure one of them is set on all web pages returned by your site/app.</p><p>If you expect the page to be framed only by pages on your server (e.g. it's part of a FRAMESET) then you'll want to use SAMEORIGIN, otherwise if you never expect the page to be framed, you should use DENY. Alternatively consider implementing Content Security Policy's \"frame-ancestors\" directive.</p>",
+					"otherinfo": "",
+					"reference": "<p>https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/X-Frame-Options</p>",
+					"cweid": "1021",
+					"wascid": "15",
+					"sourceid": "1"
+				},
+				{
+					"pluginid": "90004",
+					"alertRef": "90004-2",
+					"alert": "Cross-Origin-Embedder-Policy Header Missing or Invalid",
+					"name": "Cross-Origin-Embedder-Policy Header Missing or Invalid",
+					"riskcode": "1",
+					"confidence": "2",
+					"riskdesc": "Low (Medium)",
+					"desc": "<p>Cross-Origin-Embedder-Policy header is a response header that prevents a document from loading any cross-origin resources that don't explicitly grant the document permission (using CORP or CORS).</p>",
+					"instances":[ 
+						{
+							"id": "28",
+							"uri": "http://host.docker.internal:8082/",
+							"nodeName": "http:\/\/host.docker.internal:8082\/",
+							"method": "GET",
+							"param": "Cross-Origin-Embedder-Policy",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>Ensure that the application/web server sets the Cross-Origin-Embedder-Policy header appropriately, and that it sets the Cross-Origin-Embedder-Policy header to 'require-corp' for documents.</p><p>If possible, ensure that the end user uses a standards-compliant and modern web browser that supports the Cross-Origin-Embedder-Policy header (https://caniuse.com/mdn-http_headers_cross-origin-embedder-policy).</p>",
+					"otherinfo": "",
+					"reference": "<p>https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cross-Origin-Embedder-Policy</p>",
+					"cweid": "693",
+					"wascid": "14",
+					"sourceid": "7"
+				},
+				{
+					"pluginid": "90004",
+					"alertRef": "90004-3",
+					"alert": "Cross-Origin-Opener-Policy Header Missing or Invalid",
+					"name": "Cross-Origin-Opener-Policy Header Missing or Invalid",
+					"riskcode": "1",
+					"confidence": "2",
+					"riskdesc": "Low (Medium)",
+					"desc": "<p>Cross-Origin-Opener-Policy header is a response header that allows a site to control if others included documents share the same browsing context. Sharing the same browsing context with untrusted documents might lead to data leak.</p>",
+					"instances":[ 
+						{
+							"id": "30",
+							"uri": "http://host.docker.internal:8082/",
+							"nodeName": "http:\/\/host.docker.internal:8082\/",
+							"method": "GET",
+							"param": "Cross-Origin-Opener-Policy",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>Ensure that the application/web server sets the Cross-Origin-Opener-Policy header appropriately, and that it sets the Cross-Origin-Opener-Policy header to 'same-origin' for documents.</p><p>'same-origin-allow-popups' is considered as less secured and should be avoided.</p><p>If possible, ensure that the end user uses a standards-compliant and modern web browser that supports the Cross-Origin-Opener-Policy header (https://caniuse.com/mdn-http_headers_cross-origin-opener-policy).</p>",
+					"otherinfo": "",
+					"reference": "<p>https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cross-Origin-Opener-Policy</p>",
+					"cweid": "693",
+					"wascid": "14",
+					"sourceid": "7"
+				},
+				{
+					"pluginid": "90004",
+					"alertRef": "90004-1",
+					"alert": "Cross-Origin-Resource-Policy Header Missing or Invalid",
+					"name": "Cross-Origin-Resource-Policy Header Missing or Invalid",
+					"riskcode": "1",
+					"confidence": "2",
+					"riskdesc": "Low (Medium)",
+					"desc": "<p>Cross-Origin-Resource-Policy header is an opt-in header designed to counter side-channels attacks like Spectre. Resource should be specifically set as shareable amongst different origins.</p>",
+					"instances":[ 
+						{
+							"id": "26",
+							"uri": "http://host.docker.internal:8082/",
+							"nodeName": "http:\/\/host.docker.internal:8082\/",
+							"method": "GET",
+							"param": "Cross-Origin-Resource-Policy",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>Ensure that the application/web server sets the Cross-Origin-Resource-Policy header appropriately, and that it sets the Cross-Origin-Resource-Policy header to 'same-origin' for all web pages.</p><p>'same-site' is considered as less secured and should be avoided.</p><p>If resources must be shared, set the header to 'cross-origin'.</p><p>If possible, ensure that the end user uses a standards-compliant and modern web browser that supports the Cross-Origin-Resource-Policy header (https://caniuse.com/mdn-http_headers_cross-origin-resource-policy).</p>",
+					"otherinfo": "",
+					"reference": "<p>https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cross-Origin-Embedder-Policy</p>",
+					"cweid": "693",
+					"wascid": "14",
+					"sourceid": "7"
+				},
+				{
+					"pluginid": "10063",
+					"alertRef": "10063-1",
+					"alert": "Permissions Policy Header Not Set",
+					"name": "Permissions Policy Header Not Set",
+					"riskcode": "1",
+					"confidence": "2",
+					"riskdesc": "Low (Medium)",
+					"desc": "<p>Permissions Policy Header is an added layer of security that helps to restrict from unauthorized access or usage of browser/client features by web resources. This policy ensures the user privacy by limiting or specifying the features of the browsers can be used by the web resources. Permissions Policy provides a set of standard HTTP headers that allow website owners to limit which features of browsers can be used by the page such as camera, microphone, location, full screen etc.</p>",
+					"instances":[ 
+						{
+							"id": "24",
+							"uri": "http://host.docker.internal:8082/",
+							"nodeName": "http:\/\/host.docker.internal:8082\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "12",
+							"uri": "http://host.docker.internal:8082/robots.txt",
+							"nodeName": "http:\/\/host.docker.internal:8082\/robots.txt",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "21",
+							"uri": "http://host.docker.internal:8082/sitemap.xml",
+							"nodeName": "http:\/\/host.docker.internal:8082\/sitemap.xml",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						}
+					],
+					"count": "3",
+					"systemic": false,
+					"solution": "<p>Ensure that your web server, application server, load balancer, etc. is configured to set the Permissions-Policy header.</p>",
+					"otherinfo": "",
+					"reference": "<p>https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Permissions-Policy</p><p>https://developer.chrome.com/blog/feature-policy/</p><p>https://scotthelme.co.uk/a-new-security-header-feature-policy/</p><p>https://w3c.github.io/webappsec-feature-policy/</p><p>https://www.smashingmagazine.com/2018/12/feature-policy/</p>",
+					"cweid": "693",
+					"wascid": "15",
+					"sourceid": "1"
+				},
+				{
+					"pluginid": "10036",
+					"alertRef": "10036-2",
+					"alert": "Server Leaks Version Information via \"Server\" HTTP Response Header Field",
+					"name": "Server Leaks Version Information via \"Server\" HTTP Response Header Field",
+					"riskcode": "1",
+					"confidence": "3",
+					"riskdesc": "Low (High)",
+					"desc": "<p>The web/application server is leaking version information via the \"Server\" HTTP response header. Access to such information may facilitate attackers identifying other vulnerabilities your web/application server is subject to.</p>",
+					"instances":[ 
+						{
+							"id": "16",
+							"uri": "http://host.docker.internal:8082/",
+							"nodeName": "http:\/\/host.docker.internal:8082\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "SimpleHTTP/0.6 Python/3.14.3",
+							"otherinfo": ""
+						},
+						{
+							"id": "5",
+							"uri": "http://host.docker.internal:8082/robots.txt",
+							"nodeName": "http:\/\/host.docker.internal:8082\/robots.txt",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "SimpleHTTP/0.6 Python/3.14.3",
+							"otherinfo": ""
+						},
+						{
+							"id": "4",
+							"uri": "http://host.docker.internal:8082/sitemap.xml",
+							"nodeName": "http:\/\/host.docker.internal:8082\/sitemap.xml",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "SimpleHTTP/0.6 Python/3.14.3",
+							"otherinfo": ""
+						}
+					],
+					"count": "3",
+					"systemic": false,
+					"solution": "<p>Ensure that your web server, application server, load balancer, etc. is configured to suppress the \"Server\" header or provide generic details.</p>",
+					"otherinfo": "",
+					"reference": "<p>https://httpd.apache.org/docs/current/mod/core.html#servertokens</p><p>https://learn.microsoft.com/en-us/previous-versions/msp-n-p/ff648552(v=pandp.10)</p><p>https://www.troyhunt.com/shhh-dont-let-your-response-headers/</p>",
+					"cweid": "497",
+					"wascid": "13",
+					"sourceid": "1"
+				},
+				{
+					"pluginid": "10021",
+					"alertRef": "10021",
+					"alert": "X-Content-Type-Options Header Missing",
+					"name": "X-Content-Type-Options Header Missing",
+					"riskcode": "1",
+					"confidence": "2",
+					"riskdesc": "Low (Medium)",
+					"desc": "<p>The Anti-MIME-Sniffing header X-Content-Type-Options was not set to 'nosniff'. This allows older versions of Internet Explorer and Chrome to perform MIME-sniffing on the response body, potentially causing the response body to be interpreted and displayed as a content type other than the declared content type. Current (early 2014) and legacy versions of Firefox will use the declared content type (if one is set), rather than performing MIME-sniffing.</p>",
+					"instances":[ 
+						{
+							"id": "18",
+							"uri": "http://host.docker.internal:8082/",
+							"nodeName": "http:\/\/host.docker.internal:8082\/",
+							"method": "GET",
+							"param": "x-content-type-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>Ensure that the application/web server sets the Content-Type header appropriately, and that it sets the X-Content-Type-Options header to 'nosniff' for all web pages.</p><p>If possible, ensure that the end user uses a standards-compliant and modern web browser that does not perform MIME-sniffing at all, or that can be directed by the web application/web server to not perform MIME-sniffing.</p>",
+					"otherinfo": "<p>This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.</p><p>At \"High\" threshold this scan rule will not alert on client or server error responses.</p>",
+					"reference": "<p>https://learn.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/compatibility/gg622941(v=vs.85)</p><p>https://owasp.org/www-community/Security_Headers</p>",
+					"cweid": "693",
+					"wascid": "15",
+					"sourceid": "1"
+				},
+				{
+					"pluginid": "10109",
+					"alertRef": "10109",
+					"alert": "Modern Web Application",
+					"name": "Modern Web Application",
+					"riskcode": "0",
+					"confidence": "2",
+					"riskdesc": "Informational (Medium)",
+					"desc": "<p>The application appears to be a modern web application. If you need to explore it automatically then the Ajax Spider may well be more effective than the standard one.</p>",
+					"instances":[ 
+						{
+							"id": "14",
+							"uri": "http://host.docker.internal:8082/",
+							"nodeName": "http:\/\/host.docker.internal:8082\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "<script>\r\n        const EMBED_PROVIDER_DOMAIN = 'meet.jit.si';\r\n        const MEETING_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_-]{7,63}$/;\r\n\r\n        function validateMeetingId(meetingId) {\r\n            return MEETING_ID_PATTERN.test(meetingId);\r\n        }\r\n\r\n        function generateSecureMeetingId() {\r\n            const bytes = new Uint8Array(16);\r\n            window.crypto.getRandomValues(bytes);\r\n            const randomId = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');\r\n\r\n            return `secure-${randomId}`;\r\n        }\r\n\r\n        function buildConferenceUrl(meetingId, options = {}) {\r\n            const params = new URLSearchParams();\r\n\r\n            params.set('config.prejoinConfig.enabled', 'true');\r\n            params.set('config.startWithAudioMuted', 'true');\r\n            params.set('config.startWithVideoMuted', 'true');\r\n            params.set('config.disableThirdPartyRequests', 'true');\r\n            params.set('config.analytics.disabled', 'true');\r\n            params.set('config.analytics.obfuscateRoomName', 'true');\r\n            params.set('config.enableInsecureRoomNameWarning', 'true');\r\n            params.set('config.p2p.enabled', 'false');\r\n\r\n            if (options.e2eeEnabled) {\r\n                params.set('config.e2ee.enabled', 'true');\r\n            }\r\n            if (options.lobbyEnabled) {\r\n                params.set('config.enableLobby', 'true');\r\n            }\r\n\r\n            return `https://${EMBED_PROVIDER_DOMAIN}/${encodeURIComponent(meetingId)}#${params.toString()}`;\r\n        }\r\n\r\n        // \uD0ED \uC804\uD658\r\n        function showTab(tabName) {\r\n            // \uD0ED \uBC84\uD2BC\r\n            document.querySelectorAll('.tab').forEach(tab => {\r\n                tab.classList.remove('active');\r\n            });\r\n            event.target.classList.add('active');\r\n            \r\n            // \uD0ED \uCF58\uD150\uCE20\r\n            document.querySelectorAll('.tab-content').forEach(content => {\r\n                content.classList.remove('active');\r\n            });\r\n            document.getElementById(tabName + '-tab').classList.add('active');\r\n        }\r\n        \r\n        // \uB85C\uADF8\uC778\r\n        function login() {\r\n            const username = document.getElementById('username').value;\r\n            const password = document.getElementById('password').value;\r\n            const mfaEnabled = document.getElementById('mfa-enabled').checked;\r\n            \r\n            if (!username || !password) {\r\n                alert('\uC0AC\uC6A9\uC790 \uC774\uB984\uACFC \uBE44\uBC00\uBC88\uD638\uB97C \uC785\uB825\uD574\uC8FC\uC138\uC694.');\r\n                return;\r\n            }\r\n            \r\n            // \uC2E4\uC81C \uAD6C\uD604\uC5D0\uC11C\uB294 \uC11C\uBC84\uC640 \uD1B5\uC2E0\r\n            console.log('\uB85C\uADF8\uC778 \uC2DC\uB3C4:', { mfaEnabled });\r\n            \r\n            // \uD68C\uC758\uC2E4 \uD654\uBA74\uC73C\uB85C \uC804\uD658\r\n            document.getElementById('login-screen').style.display = 'none';\r\n            document.getElementById('meeting-screen').style.display = 'block';\r\n        }\r\n        \r\n        // \uD68C\uC6D0\uAC00\uC785\r\n        function register() {\r\n            const username = document.getElementById('reg-username').value;\r\n            const email = document.getElementById('reg-email').value;\r\n            const password = document.getElementById('reg-password').value;\r\n            \r\n            if (!username || !email || !password) {\r\n                alert('\uBAA8\uB4E0 \uD544\uB4DC\uB97C \uC785\uB825\uD574\uC8FC\uC138\uC694.');\r\n                return;\r\n            }\r\n            \r\n            // \uC2E4\uC81C \uAD6C\uD604\uC5D0\uC11C\uB294 \uC11C\uBC84\uC640 \uD1B5\uC2E0\r\n            console.log('\uD68C\uC6D0\uAC00\uC785 \uC694\uCCAD');\r\n            alert('\uD68C\uC6D0\uAC00\uC785\uC774 \uC644\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4.');\r\n        }\r\n        \r\n        // \uD68C\uC758 \uCC38\uC5EC\r\n        function joinMeeting() {\r\n            const meetingId = document.getElementById('meeting-id').value;\r\n            \r\n            if (!meetingId || !validateMeetingId(meetingId)) {\r\n                alert('\uD68C\uC758\u5BA4 ID\uB294 8~64\uC790\uC758 \uC601\uBB38/\uC22B\uC790/\uD558\uC774\uD508/\uBC11\uC904\uB9CC \uC0AC\uC6A9\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.');\r\n                return;\r\n            }\r\n            \r\n            const conferenceUrl = buildConferenceUrl(meetingId);\r\n            \r\n            document.getElementById('conference-frame').src = conferenceUrl;\r\n            console.log('\uD68C\uC758 \uCC38\uC5EC \uC694\uCCAD');\r\n        }\r\n        \r\n        // \uD68C\uC758 \uC0DD\uC131\r\n        function createMeeting() {\r\n            const meetingName = document.getElementById('new-meeting-name').value;\r\n            const e2eeEnabled = document.getElementById('e2ee-enabled').checked;\r\n            const lobbyEnabled = document.getElementById('lobby-enabled').checked;\r\n            \r\n            if (!meetingName) {\r\n                alert('\uD68C\uC758\u5BA4 \uC774\uB984\uC744 \uC785\uB825\uD574\uC8FC\uC138\uC694.');\r\n                return;\r\n            }\r\n            \r\n            const meetingId = generateSecureMeetingId();\r\n            \r\n            const conferenceUrl = buildConferenceUrl(meetingId, { e2eeEnabled, lobbyEnabled });\r\n            \r\n            document.getElementById('conference-frame').src = conferenceUrl;\r\n            console.log('\uD68C\uC758 \uC0DD\uC131 \uC694\uCCAD:', { e2eeEnabled, lobbyEnabled });\r\n        }\r\n        \r\n        // \uBCF4\uC548 \uBAA8\uB4C8 \uD1B5\uD569 (Python/Java\uC640 \uC5F0\uB3D9 \uC2DC)\r\n        class SecurityClient {\r\n            constructor() {\r\n                this.encryptionEnabled = true;\r\n                this.mfaEnabled = true;\r\n            }\r\n            \r\n            async encryptMessage(message) {\r\n                // Python \uC554\uD638\uD654 \uBAA8\uB4C8\uACFC \uC5F0\uB3D9\r\n                console.log('\uBA54\uC2DC\uC9C0 \uC554\uD638\uD654:', message);\r\n                return message;\r\n            }\r\n            \r\n            async validateSession() {\r\n                // Java \uC778\uC99D \uBAA8\uB4C8\uACFC \uC5F0\uB3D9\r\n                console.log('\uC138\uC158 \uAC80\uC99D');\r\n                return true;\r\n            }\r\n        }\r\n        \r\n        // \uBCF4\uC548 \uD074\uB77C\uC774\uC5B8\uD2B8 \uCD08\uAE30\uD654\r\n        const securityClient = new SecurityClient();\r\n    </script>",
+							"otherinfo": "No links have been found while there are scripts, which is an indication that this is a modern web application."
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>This is an informational alert and so no changes are required.</p>",
+					"otherinfo": "<p>No links have been found while there are scripts, which is an indication that this is a modern web application.</p>",
+					"reference": "",
+					"cweid": "-1",
+					"wascid": "-1",
+					"sourceid": "1"
+				},
+				{
+					"pluginid": "10049",
+					"alertRef": "10049-3",
+					"alert": "Storable and Cacheable Content",
+					"name": "Storable and Cacheable Content",
+					"riskcode": "0",
+					"confidence": "2",
+					"riskdesc": "Informational (Medium)",
+					"desc": "<p>The response contents are storable by caching components such as proxy servers, and may be retrieved directly from the cache, rather than from the origin server by the caching servers, in response to similar requests from other users. If the response data is sensitive, personal or user-specific, this may result in sensitive information being leaked. In some cases, this may even result in a user gaining complete control of the session of another user, depending on the configuration of the caching components in use in their environment. This is primarily an issue where \"shared\" caching servers such as \"proxy\" caches are configured on the local network. This configuration is typically found in corporate or educational environments, for instance.</p>",
+					"instances":[ 
+						{
+							"id": "22",
+							"uri": "http://host.docker.internal:8082/",
+							"nodeName": "http:\/\/host.docker.internal:8082\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "In the absence of an explicitly specified caching lifetime directive in the response, a liberal lifetime heuristic of 1 year was assumed. This is permitted by rfc7234."
+						},
+						{
+							"id": "7",
+							"uri": "http://host.docker.internal:8082/robots.txt",
+							"nodeName": "http:\/\/host.docker.internal:8082\/robots.txt",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "In the absence of an explicitly specified caching lifetime directive in the response, a liberal lifetime heuristic of 1 year was assumed. This is permitted by rfc7234."
+						},
+						{
+							"id": "20",
+							"uri": "http://host.docker.internal:8082/sitemap.xml",
+							"nodeName": "http:\/\/host.docker.internal:8082\/sitemap.xml",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "In the absence of an explicitly specified caching lifetime directive in the response, a liberal lifetime heuristic of 1 year was assumed. This is permitted by rfc7234."
+						}
+					],
+					"count": "3",
+					"systemic": false,
+					"solution": "<p>Validate that the response does not contain sensitive, personal or user-specific information. If it does, consider the use of the following HTTP response headers, to limit, or prevent the content being stored and retrieved from the cache by another user:</p><p>Cache-Control: no-cache, no-store, must-revalidate, private</p><p>Pragma: no-cache</p><p>Expires: 0</p><p>This configuration directs both HTTP 1.0 and HTTP 1.1 compliant caching servers to not store the response, and to not retrieve the response (without validation) from the cache, in response to a similar request.</p>",
+					"otherinfo": "<p>In the absence of an explicitly specified caching lifetime directive in the response, a liberal lifetime heuristic of 1 year was assumed. This is permitted by rfc7234.</p>",
+					"reference": "<p>https://datatracker.ietf.org/doc/html/rfc7234</p><p>https://datatracker.ietf.org/doc/html/rfc7231</p><p>https://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html</p>",
+					"cweid": "524",
+					"wascid": "13",
+					"sourceid": "7"
+				}
+			]
+		}
+	],
+	"sequences":[
+	]
+
+}

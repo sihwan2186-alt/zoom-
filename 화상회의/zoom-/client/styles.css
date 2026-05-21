@@ -1,0 +1,415 @@
+:root {
+            --bg: #111522;
+            --panel: #1a1f2f;
+            --panel-strong: #22283b;
+            --line: rgba(255, 255, 255, 0.12);
+            --text: #f7fafc;
+            --muted: #aab4c4;
+            --cyan: #64d8e8;
+            --green: #83e5a7;
+            --amber: #f4ca64;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            color: var(--text);
+            font-family: "Segoe UI", "Noto Sans KR", Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                linear-gradient(180deg, rgba(31, 37, 55, 0.96) 0%, rgba(17, 21, 34, 1) 44%),
+                var(--bg);
+        }
+
+        .container {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            padding: 24px 0;
+        }
+
+        .brand-group {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .brand-mark,
+        .placeholder-mark {
+            display: grid;
+            width: 56px;
+            height: 56px;
+            place-items: center;
+            border: 1px solid rgba(100, 216, 232, 0.5);
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(100, 216, 232, 0.18), rgba(131, 229, 167, 0.14));
+            color: var(--cyan);
+            font-weight: 800;
+            letter-spacing: 0;
+        }
+
+        .eyebrow {
+            color: var(--green);
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 4px 0;
+            font-size: 2.15rem;
+            line-height: 1.15;
+        }
+
+        h2 {
+            margin-top: 4px;
+            font-size: 1.35rem;
+            line-height: 1.25;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .header-meta,
+        .status-pill {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .header-meta span,
+        .status-pill span {
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--muted);
+            font-size: 0.78rem;
+            white-space: nowrap;
+        }
+
+        .login-container,
+        .meeting-container {
+            background: rgba(26, 31, 47, 0.96);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+            overflow: hidden;
+        }
+
+        .login-container {
+            max-width: 430px;
+            margin: 34px auto;
+        }
+
+        .meeting-container {
+            display: none;
+            margin-top: 18px;
+        }
+
+        .meeting-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px 26px;
+            background: #151a29;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="email"] {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--cyan);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(100, 216, 232, 0.16);
+        }
+
+        .btn {
+            width: 100%;
+            border: none;
+            border-radius: 8px;
+            padding: 14px;
+            color: #101522;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 800;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--cyan), var(--green));
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 28px rgba(100, 216, 232, 0.22);
+        }
+
+        .btn-secondary {
+            margin-top: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: transparent;
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--line);
+            background: var(--panel-strong);
+        }
+
+        .tab {
+            appearance: none;
+            background: transparent;
+            border: 0;
+            padding: 15px 28px;
+            border-bottom: 2px solid transparent;
+            color: var(--text);
+            cursor: pointer;
+            font: inherit;
+            font-weight: 700;
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .tab.active {
+            border-bottom-color: var(--cyan);
+            color: var(--cyan);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 26px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .alert {
+            margin-bottom: 20px;
+            border-radius: 8px;
+            padding: 14px;
+        }
+
+        .alert-info {
+            border: 1px solid rgba(100, 216, 232, 0.28);
+            background: rgba(100, 216, 232, 0.09);
+        }
+
+        .alert-success {
+            border: 1px solid rgba(131, 229, 167, 0.28);
+            background: rgba(131, 229, 167, 0.09);
+        }
+
+        .conference-shell {
+            position: relative;
+            min-height: 600px;
+            background: #03050a;
+            border-top: 1px solid var(--line);
+            overflow: hidden;
+        }
+
+        #conference-frame {
+            display: block;
+            width: 100%;
+            height: 600px;
+            border: none;
+            background: #03050a;
+        }
+
+        .conference-placeholder {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            display: grid;
+            place-items: center;
+            padding: 34px;
+            background: #080b12;
+            text-align: center;
+        }
+
+        .conference-placeholder > div {
+            max-width: 460px;
+        }
+
+        .placeholder-mark {
+            margin: 0 auto 18px;
+            width: 70px;
+            height: 70px;
+            color: var(--green);
+            font-size: 1.2rem;
+        }
+
+        .conference-placeholder strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.4rem;
+        }
+
+        .conference-placeholder span {
+            color: var(--muted);
+        }
+
+        .conference-shell.is-live .conference-placeholder {
+            display: none;
+        }
+
+        .conference-brand-overlay {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            z-index: 4;
+            min-width: 188px;
+            border: 1px solid rgba(100, 216, 232, 0.36);
+            border-radius: 8px;
+            padding: 10px 12px;
+            background: linear-gradient(90deg, rgba(3, 5, 10, 0.98), rgba(17, 21, 34, 0.92));
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+            pointer-events: none;
+        }
+
+        .conference-brand-overlay strong,
+        .conference-brand-overlay span {
+            display: block;
+        }
+
+        .conference-brand-overlay strong {
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        .conference-brand-overlay span {
+            color: var(--green);
+            font-size: 0.74rem;
+            font-weight: 800;
+        }
+
+        .security-info {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 1px;
+            background: var(--line);
+            border-top: 1px solid var(--line);
+        }
+
+        .security-badge {
+            padding: 18px 16px;
+            background: #151a29;
+            text-align: center;
+        }
+
+        .security-badge .icon {
+            display: inline-grid;
+            min-width: 48px;
+            min-height: 30px;
+            place-items: center;
+            margin-bottom: 6px;
+            border-radius: 8px;
+            background: rgba(100, 216, 232, 0.1);
+            color: var(--cyan);
+            font-size: 0.8rem;
+            font-weight: 900;
+        }
+
+        .security-badge .label {
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        .security-badge .value {
+            color: var(--green);
+            font-weight: 800;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .feature-list li::before {
+            content: "✓";
+            margin-right: 10px;
+            color: var(--green);
+        }
+
+        @media (max-width: 760px) {
+            .container {
+                padding: 16px;
+            }
+
+            .app-header,
+            .meeting-banner {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .tabs {
+                overflow-x: auto;
+            }
+
+            .tab {
+                flex: 0 0 auto;
+                padding: 14px 18px;
+            }
+
+            .security-info {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            #conference-frame,
+            .conference-shell {
+                min-height: 480px;
+                height: 480px;
+            }
+        }

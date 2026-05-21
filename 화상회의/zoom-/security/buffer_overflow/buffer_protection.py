@@ -139,7 +139,7 @@ class InputValidation:
         sanitized = html.escape(sanitized, quote=True)
         return sanitized
 
-    def validate_string_length(self, text: str, max_length: int = None) -> bool:
+    def validate_string_length(self, text: str, max_length: Optional[int] = None) -> bool:
         """문자열 길이 검증"""
         if max_length is None:
             max_length = self.MAX_STRING_LENGTH

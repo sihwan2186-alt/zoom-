@@ -1,4 +1,21 @@
 {
     "postman.settings.dotenv-detection-notification-visibility": false,
-    "python-envs.defaultEnvManager": "ms-python.python:system"
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "markdownlint.ignore": [
+        "reports/**",
+        "**/reports/**",
+        ".tmp_pdf/**",
+        "**/.tmp_pdf/**"
+    ],
+    "java.errors.incompleteClasspath.severity": "ignore",
+    "files.associations": {
+        "**/.tmp_pdf/**/LICENSE": "plaintext",
+        "**/.tmp_pdf/**/METADATA": "plaintext"
+    },
+    "files.watcherExclude": {
+        "**/.tmp_pdf/**": true
+    },
+    "search.exclude": {
+        "**/.tmp_pdf/**": true
+    }
 }

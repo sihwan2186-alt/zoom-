@@ -4,7 +4,7 @@
 
 처음 실습하는 사람은 아래 순서대로 진행하면 된다.
 
-1. 로컬 웹 페이지를 실행한다.
+1. 보안 헤더가 적용된 로컬 웹 페이지를 실행한다.
 2. ZAP Baseline Scan으로 `zap-report.json`을 만든다.
 3. STRIDE-ZAP 비교 스크립트로 `stride_zap_comparison.md`를 생성한다.
 
@@ -47,7 +47,7 @@ python "화상회의\zoom-\security\assessment\threat_zap_comparison.py"
 실습 과정에서 생성되는 주요 파일은 `reports` 폴더에 모은다.
 
 | 파일 | 생성 단계 | 용도 |
-|---|---|---|
+| --- | --- | --- |
 | `zap-report.html` | ZAP Baseline Scan | 브라우저로 확인하는 ZAP 보고서 |
 | `zap-report.md` | ZAP Baseline Scan | Markdown 형식 ZAP 보고서 |
 | `zap-report.json` | ZAP Baseline Scan | STRIDE-ZAP 비교 스크립트 입력값 |
@@ -63,7 +63,7 @@ python "화상회의\zoom-\security\assessment\threat_zap_comparison.py"
 ### 1. 실습 전에 알아둘 용어
 
 | 용어 | 뜻 |
-|---|---|
+| --- | --- |
 | Target | ZAP이 검사할 웹 사이트 주소 |
 | Spider | 웹 사이트 안의 링크와 페이지를 자동으로 찾아가는 과정 |
 | Passive Scan | 요청과 응답을 관찰하면서 위험한 설정이나 노출 정보를 찾는 검사 |
@@ -88,27 +88,42 @@ ZAP Desktop으로 실습하려면 OWASP ZAP 설치 파일도 필요하다. Windo
 
 ### 3. 실습 대상 웹 페이지 실행
 
-첫 번째 PowerShell 창에서 프로젝트의 웹 클라이언트 폴더로 이동한 뒤 간단한 로컬 웹 서버를 실행한다.
+첫 번째 PowerShell 창에서 본인 PC의 프로젝트 폴더를 기준으로 웹 클라이언트 폴더로 이동한 뒤 보안 헤더가 포함된 로컬 웹 서버를 실행한다. 프로젝트 경로와 포트 번호는 사람마다 다를 수 있으므로, 아래 명령의 `$PROJECT_ROOT`와 `$PORT` 값을 본인 환경에 맞게 바꿔 실행한다.
 
 ```powershell
-cd "C:\Users\sihwa\OneDrive\바탕 화면\sw개발보안\화상회의 프로그램\화상회의\zoom-\client"
-python -m http.server 8081
+$PROJECT_ROOT = "본인 프로젝트 폴더 경로"
+$PORT = "사용할 포트 번호"
+
+Set-Location "$PROJECT_ROOT\화상회의\zoom-\client"
+python .\secure_static_server.py --port $PORT
 ```
 
-서버가 실행되면 이 PowerShell 창은 닫지 않는다. 브라우저에서 아래 주소를 열어 페이지가 보이면 준비가 끝난 것이다.
+`$PORT`에는 현재 PC에서 비어 있는 포트 번호를 넣는다. 서버가 실행되면 이 PowerShell 창은 닫지 않는다. 아래 명령으로 브라우저 접속 주소를 만든 뒤, 출력된 주소를 브라우저에 열어 페이지가 보이면 준비가 끝난 것이다.
 
-```text
-http://127.0.0.1:8081/
+```powershell
+$browserUrl = "http" + "://127.0.0.1:" + $PORT + "/"
+$browserUrl
 ```
 
-이 실습 대상은 Python 기본 웹 서버로 실행되는 정적 HTML 페이지다. 따라서 ZAP 결과는 실제 운영용 화상회의 서버 전체에 대한 진단 결과가 아니라, 실습용 페이지와 기본 웹 서버를 대상으로 한 예비 진단 결과로 해석한다.
+이 실습 대상은 정적 HTML 페이지지만, `secure_static_server.py`가 CSP, X-Frame-Options, X-Content-Type-Options, Permissions-Policy, Cross-Origin 계열 헤더를 추가한다. 따라서 ZAP 결과는 실제 운영용 화상회의 서버 전체에 대한 진단 결과가 아니라, 실습용 페이지와 로컬 보안 헤더 구성을 대상으로 한 예비 진단 결과로 해석한다.
+
+현재 `reports/zap-report.*` 파일은 기존 기준선 진단 산출물이다. 보안 헤더 서버를 적용한 뒤 ZAP을 다시 실행하면 CSP/브라우저 보안 헤더 관련 경고 변화까지 비교할 수 있다.
+
+비교를 위해 Python 기본 서버를 써야 한다면 아래처럼 실행할 수 있다. 다만 이 경우 ZAP에서 보안 헤더 누락 경고가 더 많이 나오는 것이 정상이다.
+
+```powershell
+python -m http.server $PORT
+```
 
 ### 4. Docker로 ZAP Baseline Scan 실행
 
-두 번째 PowerShell 창을 열고 프로젝트 루트 폴더로 이동한다.
+두 번째 PowerShell 창을 열고 프로젝트 루트 폴더로 이동한다. 여기서도 `$PROJECT_ROOT`는 README 파일이 있는 본인 PC의 프로젝트 위치로 바꿔 사용한다.
 
 ```powershell
-cd "C:\Users\sihwa\OneDrive\바탕 화면\sw개발보안\화상회의 프로그램"
+$PROJECT_ROOT = "본인 프로젝트 폴더 경로"
+$PORT = "3번에서 사용한 포트 번호"
+
+Set-Location $PROJECT_ROOT
 ```
 
 ZAP 보고서를 저장할 폴더를 만든다.
@@ -121,15 +136,16 @@ New-Item -ItemType Directory -Force reports
 
 ```powershell
 $reportDir = (Resolve-Path .\reports).Path
-docker run --rm -v "${reportDir}:/zap/wrk/:rw" -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://host.docker.internal:8081/ -m 5 -J zap-report.json -r zap-report.html -w zap-report.md -I
+$targetUrl = "http" + "://host.docker.internal:" + $PORT + "/"
+docker run --rm -v "${reportDir}:/zap/wrk/:rw" -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t $targetUrl -m 5 -J zap-report.json -r zap-report.html -w zap-report.md -I
 ```
 
-여기서 `http://host.docker.internal:8081/`은 Docker 컨테이너가 내 PC에서 실행 중인 웹 서버에 접근하기 위한 주소다. 브라우저나 ZAP Desktop에서는 `http://127.0.0.1:8081/`을 사용하고, Docker 명령에서는 `http://host.docker.internal:8081/`을 사용한다고 이해하면 된다.
+여기서 `$PORT`는 3번에서 Python 웹 서버를 실행할 때 사용한 포트와 같은 번호로 맞춘다. Docker 컨테이너는 내 PC의 로컬 서버에 직접 `127.0.0.1`로 접근하지 못할 수 있으므로, Docker 명령에서는 `host.docker.internal` 주소를 사용한다. 브라우저나 ZAP Desktop에서는 `127.0.0.1`과 `$PORT`를 조합한 주소로 접속하고, Docker 명령에서는 `host.docker.internal`과 `$PORT`를 조합한 주소로 접속한다고 이해하면 된다.
 
 명령이 끝나면 `reports` 폴더에 다음 파일이 생성된다.
 
 | 파일 | 용도 |
-|---|---|
+| --- | --- |
 | `zap-report.html` | 사람이 읽기 좋은 ZAP HTML 보고서 |
 | `zap-report.md` | Markdown 형식 보고서 |
 | `zap-report.json` | 이 프로젝트의 STRIDE-ZAP 비교 스크립트에 넣을 ZAP 결과 |
@@ -151,7 +167,7 @@ python "화상회의\zoom-\security\assessment\threat_zap_comparison.py" --zap-j
 실행이 끝나면 `reports` 폴더에 비교 결과가 추가된다.
 
 | 파일 | 용도 |
-|---|---|
+| --- | --- |
 | `stride_zap_comparison.md` | STRIDE와 ZAP 탐지 결과를 비교한 Markdown 보고서 |
 | `stride_zap_summary.json` | 비교 결과 원본 데이터 |
 
@@ -171,7 +187,7 @@ Docker 명령이 어렵다면 ZAP Desktop으로도 실습할 수 있다.
 2. 처음 실행할 때 세션 저장 여부를 물으면 실습용이므로 저장하지 않아도 된다.
 3. 상단 또는 왼쪽의 `Quick Start` 탭을 연다.
 4. `Automated Scan`을 선택한다.
-5. URL 입력 칸에 `http://127.0.0.1:8081/`을 입력한다.
+5. URL 입력 칸에 3번에서 만든 브라우저 접속 주소를 입력한다.
 6. `Attack` 버튼을 누른다.
 7. 하단의 `Alerts` 탭에서 탐지 결과를 확인한다.
 
@@ -196,18 +212,18 @@ python "화상회의\zoom-\security\assessment\threat_zap_comparison.py" --zap-j
 ### 8. 자주 막히는 부분
 
 | 증상 | 해결 방법 |
-|---|---|
-| 브라우저에서 `127.0.0.1:8081`이 열리지 않음 | 첫 번째 PowerShell에서 `python -m http.server 8081`이 계속 실행 중인지 확인 |
-| Docker에서 대상에 접속하지 못함 | Docker 명령의 URL이 `http://host.docker.internal:8081/`인지 확인 |
+| --- | --- |
+| 브라우저에서 로컬 주소가 열리지 않음 | 첫 번째 PowerShell에서 `python -m http.server $PORT`가 계속 실행 중인지 확인 |
+| Docker에서 대상에 접속하지 못함 | Docker 명령의 `$targetUrl`이 3번에서 사용한 포트 번호와 같은지 확인 |
 | ZAP 결과가 너무 적음 | 정적 HTML만 실행하면 탐지할 표면이 적을 수 있다. 이 경우 실습 목적상 정상이다. |
 | WARN 때문에 실패처럼 보임 | Baseline Scan은 경고가 있으면 종료 코드가 경고로 나올 수 있다. 이 README 명령은 `-I` 옵션으로 경고를 실패 처리하지 않도록 했다. |
 | JSON 파일이 없음 | Docker 명령에 `-J zap-report.json` 옵션이 포함되어 있는지 확인 |
 
 참고 문서:
 
-- OWASP ZAP Getting Started: https://www.zaproxy.org/getting-started/
-- OWASP ZAP Baseline Scan: https://www.zaproxy.org/docs/docker/baseline-scan/
-- OWASP ZAP Docker User Guide: https://www.zaproxy.org/docs/docker/about/
+- [OWASP ZAP Getting Started](https://www.zaproxy.org/getting-started/)
+- [OWASP ZAP Baseline Scan](https://www.zaproxy.org/docs/docker/baseline-scan/)
+- [OWASP ZAP Docker User Guide](https://www.zaproxy.org/docs/docker/about/)
 
 ## STRIDE 실습 순서
 
@@ -218,7 +234,7 @@ python "화상회의\zoom-\security\assessment\threat_zap_comparison.py" --zap-j
 STRIDE는 여섯 가지 위협 유형의 앞 글자를 모은 것이다.
 
 | 분류 | 의미 | 화상회의 예시 |
-|---|---|---|
+| --- | --- | --- |
 | S: Spoofing | 다른 사용자나 시스템인 척함 | 공격자가 다른 사용자 계정으로 로그인하거나 회의 호스트인 척함 |
 | T: Tampering | 데이터나 요청을 변조함 | 회의 ID, 권한 토큰, 미디어 패킷을 바꿔서 전송함 |
 | R: Repudiation | 행위 부인 | 사용자가 회의방 설정 변경이나 강제 퇴장 행위를 부인함 |
@@ -231,7 +247,7 @@ STRIDE는 여섯 가지 위협 유형의 앞 글자를 모은 것이다.
 처음부터 전체 시스템을 보려고 하면 어렵다. 이 프로젝트에서는 아래 범위만 대상으로 잡는다.
 
 | 분석 범위 | 포함 내용 |
-|---|---|
+| --- | --- |
 | 사용자 | 회의 생성자, 일반 참가자, 비로그인 접근자 |
 | 클라이언트 | `화상회의/zoom-/client/index.html` |
 | 인증 | 로그인, MFA, 회의방/역할 바인딩 토큰 |
@@ -261,7 +277,7 @@ STRIDE는 여섯 가지 위협 유형의 앞 글자를 모은 것이다.
 그 다음 신뢰 경계를 표시한다. 신뢰 경계는 “여기부터는 다른 권한 또는 다른 보안 수준의 영역”이라고 보면 된다.
 
 | 신뢰 경계 | 설명 |
-|---|---|
+| --- | --- |
 | 사용자 입력 경계 | 사용자가 입력한 회의 ID, 표시명, 로그인 정보는 신뢰할 수 없음 |
 | 브라우저-서버 경계 | 요청이 네트워크를 통해 이동하므로 탈취·변조 가능성이 있음 |
 | 인증-회의방 경계 | 로그인한 사용자라도 특정 회의방 권한이 있는지는 별도 확인 필요 |
@@ -273,7 +289,7 @@ STRIDE는 여섯 가지 위협 유형의 앞 글자를 모은 것이다.
 각 구성요소마다 아래 질문을 던진다. 답이 “그럴 수 있다”이면 위협 후보로 기록한다.
 
 | STRIDE | 질문 |
-|---|---|
+| --- | --- |
 | Spoofing | 공격자가 다른 사용자, 호스트, 서버인 척할 수 있는가? |
 | Tampering | 회의 ID, 토큰, 요청 파라미터, 미디어 데이터가 변조될 수 있는가? |
 | Repudiation | 누가 어떤 행동을 했는지 나중에 확인할 로그가 부족한가? |
@@ -286,7 +302,7 @@ STRIDE는 여섯 가지 위협 유형의 앞 글자를 모은 것이다.
 아래 표를 복사해서 실습용 STRIDE 분석표로 사용한다.
 
 | ID | 구성요소 | STRIDE 분류 | 위협 설명 | 영향 | 기존 방어책 | 추가 보완책 |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- |
 | S-01 | 인증 | Spoofing | 공격자가 탈취한 토큰으로 다른 사용자처럼 회의에 참여할 수 있음 | 무단 회의 참여 | 토큰 만료 | 회의방/역할 claim 검증, 토큰 폐기 목록 |
 | I-01 | 회의 링크 | Information Disclosure | 회의 초대 링크가 로그나 화면 공유로 노출될 수 있음 | 외부인 접속 | 회의 ID 난수화 | 링크 마스킹, 대기실, 호스트 승인 |
 | D-01 | 입력 검증 | Denial of Service | 매우 긴 표시명이나 위험한 정규식 입력으로 처리 지연 가능 | 회의 참여 장애 | 길이 제한 | ReDoS 위험 패턴 차단 |
@@ -298,7 +314,7 @@ STRIDE는 여섯 가지 위협 유형의 앞 글자를 모은 것이다.
 이 프로젝트에서는 STRIDE로 찾은 위협의 우선순위를 정하기 위해 DREAD 점수를 함께 사용할 수 있다. 각 항목은 1점에서 5점으로 평가한다.
 
 | 항목 | 의미 | 점수 기준 |
-|---|---|---|
+| --- | --- | --- |
 | Damage | 피해 규모 | 1점은 영향 작음, 5점은 계정 탈취·회의 도청처럼 영향 큼 |
 | Reproducibility | 재현 가능성 | 1점은 조건이 까다로움, 5점은 누구나 반복 가능 |
 | Exploitability | 공격 난이도 | 1점은 어렵고, 5점은 간단한 URL·요청 조작으로 가능 |
@@ -308,7 +324,7 @@ STRIDE는 여섯 가지 위협 유형의 앞 글자를 모은 것이다.
 예시는 다음과 같다.
 
 | ID | Damage | Reproducibility | Exploitability | Affected Users | Discoverability | 평균 |
-|---|---:|---:|---:|---:|---:|---:|
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | S-01 | 5 | 4 | 3 | 4 | 3 | 3.8 |
 | I-01 | 4 | 5 | 4 | 3 | 5 | 4.2 |
 | D-01 | 3 | 3 | 3 | 4 | 2 | 3.0 |
@@ -317,10 +333,12 @@ STRIDE는 여섯 가지 위협 유형의 앞 글자를 모은 것이다.
 
 ### 7. 이 프로젝트의 STRIDE 샘플 보고서 실행
 
-이 프로젝트에는 화상회의 환경을 기준으로 작성된 STRIDE 샘플 항목이 비교 스크립트 안에 들어 있다. PowerShell에서 프로젝트 루트로 이동한 뒤 실행한다.
+이 프로젝트에는 화상회의 환경을 기준으로 작성된 STRIDE 샘플 항목이 비교 스크립트 안에 들어 있다. PowerShell에서 본인 PC의 프로젝트 루트로 이동한 뒤 실행한다.
 
 ```powershell
-cd "C:\Users\sihwa\OneDrive\바탕 화면\sw개발보안\화상회의 프로그램"
+$PROJECT_ROOT = "본인 프로젝트 폴더 경로"
+
+Set-Location $PROJECT_ROOT
 New-Item -ItemType Directory -Force reports
 python "화상회의\zoom-\security\assessment\threat_zap_comparison.py" --output-md ".\reports\stride_sample_report.md" --output-json ".\reports\stride_sample_summary.json"
 ```
@@ -377,7 +395,7 @@ python "화상회의\zoom-\security\assessment\threat_zap_comparison.py" --strid
 직접 작성한 STRIDE 표를 보고 다음을 확인한다.
 
 | 확인 항목 | 질문 |
-|---|---|
+| --- | --- |
 | 누락 확인 | 인증, 세션, 회의방, 미디어, 개인정보, 입력 검증을 모두 봤는가? |
 | 분류 확인 | 각 위협이 S/T/R/I/D/E 중 어디에 해당하는지 설명할 수 있는가? |
 | 근거 확인 | 해당 위협이 실제 코드나 데이터 흐름에서 발생 가능한 이유가 있는가? |
@@ -392,7 +410,7 @@ python "화상회의\zoom-\security\assessment\threat_zap_comparison.py" --strid
 
 ```markdown
 | ID | 구성요소 | STRIDE | 위협 | OWASP Top 10 매핑 | DREAD 평균 | 대응 우선순위 |
-|---|---|---|---|---|---:|---|
+| --- | --- | --- | --- | --- | ---: | --- |
 | I-01 | 회의 링크 | Information Disclosure | 회의 링크 노출로 외부인이 접근할 수 있음 | A01 Broken Access Control | 4.2 | 높음 |
 | E-01 | 회의방 권한 | Elevation of Privilege | 일반 참가자가 호스트 권한을 획득할 수 있음 | A01 Broken Access Control | 4.4 | 높음 |
 | D-01 | 입력 검증 | Denial of Service | ReDoS 입력으로 회의 참여가 지연될 수 있음 | A03 Injection | 3.0 | 중간 |
@@ -407,7 +425,7 @@ STRIDE 분석 결과, 화상회의 시스템에서는 회의방 권한 검증, �
 ### 11. STRIDE 실습 시 주의할 점
 
 | 주의점 | 설명 |
-|---|---|
+| --- | --- |
 | 취약점 이름만 나열하지 않기 | 반드시 어떤 구성요소에서 왜 발생하는지 적어야 한다. |
 | 코드만 보지 않기 | STRIDE는 코드 취약점뿐 아니라 설계·권한·데이터 흐름 위협도 본다. |
 | ZAP 결과와 혼동하지 않기 | ZAP은 실행 중인 웹 앱을 검사하고, STRIDE는 구조와 설계를 분석한다. |

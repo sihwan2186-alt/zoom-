@@ -1,0 +1,5 @@
+reports/
+.tmp_pdf/
+reports/**
+.tmp_pdf/**
+**/.tmp_pdf/**

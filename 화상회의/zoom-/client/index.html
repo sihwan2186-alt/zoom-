@@ -4,234 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; frame-src https://meet.jit.si; connect-src 'self' https://meet.jit.si wss://meet.jit.si; img-src 'self' data: https://meet.jit.si; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';">
-    <title>보안 화상회의 실습</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-            color: #fff;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        header {
-            text-align: center;
-            padding: 30px 0;
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #00d9ff, #00ff88);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .subtitle {
-            color: #888;
-            font-size: 1rem;
-        }
-        
-        .login-container {
-            max-width: 400px;
-            margin: 50px auto;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 40px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #aaa;
-            font-size: 0.9rem;
-        }
-        
-        input[type="text"],
-        input[type="password"],
-        input[type="email"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            color: #fff;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-        
-        input:focus {
-            outline: none;
-            border-color: #00d9ff;
-            box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(90deg, #00d9ff, #00ff88);
-            color: #1a1a2e;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.3);
-        }
-        
-        .btn-secondary {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #fff;
-            margin-top: 10px;
-        }
-        
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .meeting-container {
-            display: none;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            overflow: hidden;
-            margin-top: 30px;
-        }
-        
-        #conference-frame {
-            width: 100%;
-            height: 600px;
-            border: none;
-        }
-        
-        .security-info {
-            display: flex;
-            justify-content: space-around;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .security-badge {
-            text-align: center;
-        }
-        
-        .security-badge .icon {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
-        }
-        
-        .security-badge .label {
-            font-size: 0.8rem;
-            color: #888;
-        }
-        
-        .security-badge .value {
-            color: #00ff88;
-            font-weight: 600;
-        }
-        
-        .tabs {
-            display: flex;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .tab {
-            padding: 15px 30px;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s;
-        }
-        
-        .tab.active {
-            border-bottom-color: #00d9ff;
-            color: #00d9ff;
-        }
-        
-        .tab-content {
-            display: none;
-            padding: 30px;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        
-        .alert-info {
-            background: rgba(0, 217, 255, 0.1);
-            border: 1px solid rgba(0, 217, 255, 0.3);
-        }
-        
-        .alert-success {
-            background: rgba(0, 255, 136, 0.1);
-            border: 1px solid rgba(0, 255, 136, 0.3);
-        }
-        
-        .feature-list {
-            list-style: none;
-        }
-        
-        .feature-list li {
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .feature-list li::before {
-            content: "✓";
-            color: #00ff88;
-            margin-right: 10px;
-        }
-    </style>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; frame-src https://meet.jit.si; connect-src 'self' https://meet.jit.si wss://meet.jit.si; img-src 'self' data: https://meet.jit.si; style-src 'self'; script-src 'self'; form-action 'self';">
+    <title>SW개발보안 1팀 SecureMeet</title>
+    <link rel="stylesheet" href="styles.css">
+
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>🔒 보안 화상회의</h1>
-            <p class="subtitle">WebRTC 기반 화상회의 보안 강화 실습</p>
+        <header class="app-header">
+            <div class="brand-group">
+                <div class="brand-mark" aria-hidden="true">S1</div>
+                <div>
+                    <p class="eyebrow">SW개발보안 1팀</p>
+                    <h1>SecureMeet Lab</h1>
+                    <p class="subtitle">보안 설계와 동적 진단을 결합한 화상회의 실습 프로그램</p>
+                </div>
+            </div>
+            <div class="header-meta" aria-label="프로그램 정보">
+                <span>로컬 실행</span>
+                <span>STRIDE-ZAP 검증</span>
+            </div>
         </header>
         
         <!-- 로그인 화면 -->
         <div id="login-screen" class="login-container">
             <div class="tabs">
-                <div class="tab active" onclick="showTab('login')">로그인</div>
-                <div class="tab" onclick="showTab('register')">회원가입</div>
+                <button type="button" class="tab active" data-tab-target="login">로그인</button>
+                <button type="button" class="tab" data-tab-target="register">회원가입</button>
             </div>
             
             <div id="login-tab" class="tab-content active">
                 <div class="alert alert-info">
-                    <strong>보안 기능:</strong> 다단계 인증(MFA) 지원
+                    <strong>SW개발보안 1팀 인증 게이트</strong>
                 </div>
                 
                 <div class="form-group">
@@ -250,7 +54,7 @@
                     </label>
                 </div>
                 
-                <button class="btn btn-primary" onclick="login()">로그인</button>
+                <button type="button" id="login-button" class="btn btn-primary">로그인</button>
             </div>
             
             <div id="register-tab" class="tab-content">
@@ -269,31 +73,42 @@
                     <input type="password" id="reg-password" placeholder="비밀번호 입력">
                 </div>
                 
-                <button class="btn btn-primary" onclick="register()">회원가입</button>
+                <button type="button" id="register-button" class="btn btn-primary">회원가입</button>
             </div>
         </div>
         
         <!-- 회의실 화면 -->
         <div id="meeting-screen" class="meeting-container">
+            <div class="meeting-banner">
+                <div>
+                    <p class="eyebrow">SW개발보안 1팀 프로그램</p>
+                    <h2>보안 회의 콘솔</h2>
+                    <p class="subtitle">회의 참여, 생성, 보안 설정을 한 화면에서 관리합니다.</p>
+                </div>
+                <div class="status-pill" aria-label="회의 상태">
+                    <span id="active-meeting-label">회의 대기 중</span>
+                    <span>보안 모드 활성</span>
+                </div>
+            </div>
             <div class="tabs">
-                <div class="tab active" onclick="showTab('join')">회의 참여</div>
-                <div class="tab" onclick="showTab('create')">회의 생성</div>
-                <div class="tab" onclick="showTab('security')">보안 설정</div>
+                <button type="button" class="tab active" data-tab-target="join">회의 참여</button>
+                <button type="button" class="tab" data-tab-target="create">회의 생성</button>
+                <button type="button" class="tab" data-tab-target="security">보안 설정</button>
             </div>
             
             <div id="join-tab" class="tab-content active">
                 <div class="form-group">
-                    <label>회의室 ID</label>
-                    <input type="text" id="meeting-id" placeholder="회의室 ID 입력">
+                    <label>회의실 ID</label>
+                    <input type="text" id="meeting-id" placeholder="회의실 ID 입력">
                 </div>
                 
-                <button class="btn btn-primary" onclick="joinMeeting()">회의 참여</button>
+                <button type="button" id="join-meeting-button" class="btn btn-primary">회의 참여</button>
             </div>
             
             <div id="create-tab" class="tab-content">
                 <div class="form-group">
-                    <label>회의室 이름</label>
-                    <input type="text" id="new-meeting-name" placeholder="회의室 이름 입력">
+                    <label>회의실 이름</label>
+                    <input type="text" id="new-meeting-name" placeholder="회의실 이름 입력">
                 </div>
                 
                 <div class="form-group">
@@ -308,7 +123,7 @@
                     </label>
                 </div>
                 
-                <button class="btn btn-primary" onclick="createMeeting()">회의室 생성</button>
+                <button type="button" id="create-meeting-button" class="btn btn-primary">회의실 생성</button>
             </div>
             
             <div id="security-tab" class="tab-content">
@@ -328,182 +143,51 @@
             </div>
             
             <!-- 외부 WebRTC 회의 엔진 임베드 -->
-            <iframe
-                id="conference-frame"
-                allow="camera; microphone; fullscreen; display-capture"
-                referrerpolicy="no-referrer"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation allow-modals allow-downloads"></iframe>
+            <div id="conference-shell" class="conference-shell">
+                <div id="conference-placeholder" class="conference-placeholder">
+                    <div>
+                        <div class="placeholder-mark" aria-hidden="true">S1</div>
+                        <strong>SW개발보안 1팀 보안 회의실</strong>
+                        <span>회의 ID를 입력하거나 새 회의를 생성하면 보안 회의 화면이 열립니다.</span>
+                    </div>
+                </div>
+                <div class="conference-brand-overlay" aria-hidden="true">
+                    <strong>SW개발보안 1팀</strong>
+                    <span>SecureMeet Lab</span>
+                </div>
+                <iframe
+                    id="conference-frame"
+                    title="SW개발보안 1팀 SecureMeet 회의 화면"
+                    allow="camera; microphone; fullscreen; display-capture"
+                    referrerpolicy="no-referrer"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation allow-modals allow-downloads"></iframe>
+            </div>
             
             <!-- 보안 정보 -->
             <div class="security-info">
                 <div class="security-badge">
-                    <div class="icon">🔐</div>
+                    <div class="icon">AES</div>
                     <div class="label">암호화</div>
                     <div class="value">AES-256</div>
                 </div>
                 <div class="security-badge">
-                    <div class="icon">🔑</div>
+                    <div class="icon">RSA</div>
                     <div class="label">키 교환</div>
                     <div class="value">RSA-4096</div>
                 </div>
                 <div class="security-badge">
-                    <div class="icon">🛡️</div>
+                    <div class="icon">E2EE</div>
                     <div class="label">E2EE</div>
                     <div class="value">선택 적용</div>
                 </div>
                 <div class="security-badge">
-                    <div class="icon">✅</div>
+                    <div class="icon">MFA</div>
                     <div class="label">MFA</div>
                     <div class="value">활성화</div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <script>
-        const EMBED_PROVIDER_DOMAIN = 'meet.jit.si';
-        const MEETING_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_-]{7,63}$/;
-
-        function validateMeetingId(meetingId) {
-            return MEETING_ID_PATTERN.test(meetingId);
-        }
-
-        function generateSecureMeetingId() {
-            const bytes = new Uint8Array(16);
-            window.crypto.getRandomValues(bytes);
-            const randomId = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
-
-            return `secure-${randomId}`;
-        }
-
-        function buildConferenceUrl(meetingId, options = {}) {
-            const params = new URLSearchParams();
-
-            params.set('config.prejoinConfig.enabled', 'true');
-            params.set('config.startWithAudioMuted', 'true');
-            params.set('config.startWithVideoMuted', 'true');
-            params.set('config.disableThirdPartyRequests', 'true');
-            params.set('config.analytics.disabled', 'true');
-            params.set('config.analytics.obfuscateRoomName', 'true');
-            params.set('config.enableInsecureRoomNameWarning', 'true');
-            params.set('config.p2p.enabled', 'false');
-
-            if (options.e2eeEnabled) {
-                params.set('config.e2ee.enabled', 'true');
-            }
-            if (options.lobbyEnabled) {
-                params.set('config.enableLobby', 'true');
-            }
-
-            return `https://${EMBED_PROVIDER_DOMAIN}/${encodeURIComponent(meetingId)}#${params.toString()}`;
-        }
-
-        // 탭 전환
-        function showTab(tabName) {
-            // 탭 버튼
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // 탭 콘텐츠
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.getElementById(tabName + '-tab').classList.add('active');
-        }
-        
-        // 로그인
-        function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const mfaEnabled = document.getElementById('mfa-enabled').checked;
-            
-            if (!username || !password) {
-                alert('사용자 이름과 비밀번호를 입력해주세요.');
-                return;
-            }
-            
-            // 실제 구현에서는 서버와 통신
-            console.log('로그인 시도:', { mfaEnabled });
-            
-            // 회의실 화면으로 전환
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('meeting-screen').style.display = 'block';
-        }
-        
-        // 회원가입
-        function register() {
-            const username = document.getElementById('reg-username').value;
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
-            
-            if (!username || !email || !password) {
-                alert('모든 필드를 입력해주세요.');
-                return;
-            }
-            
-            // 실제 구현에서는 서버와 통신
-            console.log('회원가입 요청');
-            alert('회원가입이 완료되었습니다.');
-        }
-        
-        // 회의 참여
-        function joinMeeting() {
-            const meetingId = document.getElementById('meeting-id').value;
-            
-            if (!meetingId || !validateMeetingId(meetingId)) {
-                alert('회의室 ID는 8~64자의 영문/숫자/하이픈/밑줄만 사용할 수 있습니다.');
-                return;
-            }
-            
-            const conferenceUrl = buildConferenceUrl(meetingId);
-            
-            document.getElementById('conference-frame').src = conferenceUrl;
-            console.log('회의 참여 요청');
-        }
-        
-        // 회의 생성
-        function createMeeting() {
-            const meetingName = document.getElementById('new-meeting-name').value;
-            const e2eeEnabled = document.getElementById('e2ee-enabled').checked;
-            const lobbyEnabled = document.getElementById('lobby-enabled').checked;
-            
-            if (!meetingName) {
-                alert('회의室 이름을 입력해주세요.');
-                return;
-            }
-            
-            const meetingId = generateSecureMeetingId();
-            
-            const conferenceUrl = buildConferenceUrl(meetingId, { e2eeEnabled, lobbyEnabled });
-            
-            document.getElementById('conference-frame').src = conferenceUrl;
-            console.log('회의 생성 요청:', { e2eeEnabled, lobbyEnabled });
-        }
-        
-        // 보안 모듈 통합 (Python/Java와 연동 시)
-        class SecurityClient {
-            constructor() {
-                this.encryptionEnabled = true;
-                this.mfaEnabled = true;
-            }
-            
-            async encryptMessage(message) {
-                // Python 암호화 모듈과 연동
-                console.log('메시지 암호화:', message);
-                return message;
-            }
-            
-            async validateSession() {
-                // Java 인증 모듈과 연동
-                console.log('세션 검증');
-                return true;
-            }
-        }
-        
-        // 보안 클라이언트 초기화
-        const securityClient = new SecurityClient();
-    </script>
+    <script src="app.js" defer></script>
 </body>
 </html>

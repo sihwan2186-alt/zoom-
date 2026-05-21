@@ -1,24 +1,32 @@
 import os
 import hmac
 import hashlib
+import importlib
 from dataclasses import dataclass
-from typing import Dict, Iterable, Tuple
+from types import ModuleType
+from typing import Any, Dict, Iterable, Optional, Tuple
 
-try:
-    from cryptography.hazmat.backends import default_backend
-    from cryptography.hazmat.primitives import hashes
-    from cryptography.hazmat.primitives.asymmetric import padding, rsa
-    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-except ImportError:  # pragma: no cover - exercised on machines without cryptography
-    default_backend = None
-    hashes = None
-    padding = None
-    rsa = None
-    Cipher = None
-    algorithms = None
-    modes = None
-    PBKDF2HMAC = None
+
+def optional_module(module_name: str) -> ModuleType | None:
+    """Return an optional dependency module without triggering static import errors."""
+    try:
+        return importlib.import_module(module_name)
+    except ImportError:  # pragma: no cover - exercised on machines without cryptography
+        return None
+
+
+crypto_backends = optional_module("cryptography.hazmat.backends")
+hashes: Any = optional_module("cryptography.hazmat.primitives.hashes")
+padding: Any = optional_module("cryptography.hazmat.primitives.asymmetric.padding")
+rsa: Any = optional_module("cryptography.hazmat.primitives.asymmetric.rsa")
+crypto_ciphers = optional_module("cryptography.hazmat.primitives.ciphers")
+crypto_algorithms: Any = optional_module("cryptography.hazmat.primitives.ciphers.algorithms")
+crypto_modes: Any = optional_module("cryptography.hazmat.primitives.ciphers.modes")
+crypto_pbkdf2 = optional_module("cryptography.hazmat.primitives.kdf.pbkdf2")
+
+default_backend = getattr(crypto_backends, "default_backend", None)
+Cipher = getattr(crypto_ciphers, "Cipher", None)
+PBKDF2HMAC = getattr(crypto_pbkdf2, "PBKDF2HMAC", None)
 
 
 AES_PREFIX = b"ZGCM1"
@@ -27,6 +35,32 @@ FALLBACK_PREFIX = b"ZHMAC1"
 
 class CryptoDependencyError(RuntimeError):
     """Raised when a production cryptographic primitive is unavailable."""
+
+
+def require_crypto(value: Any, message: str) -> Any:
+    """Return an optional cryptography object after a runtime availability check."""
+    if value is None:
+        raise CryptoDependencyError(message)
+    return value
+
+
+def crypto_backend() -> Any:
+    backend_factory = require_crypto(
+        default_backend,
+        "cryptography backend requires the cryptography package",
+    )
+    return backend_factory()
+
+
+def aes_gcm_cipher(key: bytes, iv: bytes, tag: bytes | None = None) -> Any:
+    cipher_factory = require_crypto(Cipher, "AES-GCM requires the cryptography package")
+    algorithms_module = require_crypto(
+        crypto_algorithms,
+        "AES-GCM algorithms require the cryptography package",
+    )
+    modes_module = require_crypto(crypto_modes, "AES-GCM modes require the cryptography package")
+    gcm_mode = modes_module.GCM(iv) if tag is None else modes_module.GCM(iv, tag)
+    return cipher_factory(algorithms_module.AES(key), gcm_mode, backend=crypto_backend())
 
 
 class EncryptionModule:
@@ -45,20 +79,22 @@ class EncryptionModule:
 
     @staticmethod
     def has_aes_gcm() -> bool:
-        return Cipher is not None and algorithms is not None and modes is not None
+        return Cipher is not None and crypto_algorithms is not None and crypto_modes is not None
 
-    def generate_key(self, password: str, salt: bytes = None) -> tuple:
+    def generate_key(self, password: str, salt: Optional[bytes] = None) -> tuple:
         """PBKDF2 기반 키 생성"""
         if salt is None:
             salt = os.urandom(16)
 
-        if PBKDF2HMAC is not None:
-            kdf = PBKDF2HMAC(
-                algorithm=hashes.SHA256(),
+        if PBKDF2HMAC is not None and hashes is not None and default_backend is not None:
+            pbkdf2_factory = require_crypto(PBKDF2HMAC, "PBKDF2 requires the cryptography package")
+            hashes_module = require_crypto(hashes, "PBKDF2 hashes require the cryptography package")
+            kdf = pbkdf2_factory(
+                algorithm=hashes_module.SHA256(),
                 length=32,
                 salt=salt,
                 iterations=200000,
-                backend=default_backend()
+                backend=crypto_backend()
             )
             key = kdf.derive(password.encode("utf-8"))
         else:
@@ -81,11 +117,7 @@ class EncryptionModule:
             return self._encrypt_fallback(plaintext, key, aad)
 
         iv = os.urandom(12)
-        cipher = Cipher(
-            algorithms.AES(key),
-            modes.GCM(iv),
-            backend=default_backend()
-        )
+        cipher = aes_gcm_cipher(key, iv)
         encryptor = cipher.encryptor()
         if aad:
             encryptor.authenticate_additional_data(aad)
@@ -117,11 +149,7 @@ class EncryptionModule:
         tag = payload[12:28]
         data = payload[28:]
 
-        cipher = Cipher(
-            algorithms.AES(key),
-            modes.GCM(iv, tag),
-            backend=default_backend()
-        )
+        cipher = aes_gcm_cipher(key, iv, tag)
         decryptor = cipher.decryptor()
         if aad:
             decryptor.authenticate_additional_data(aad)
@@ -217,38 +245,37 @@ class KeyManagement:
 
     def generate_user_keypair(self):
         """사용자 키쌍 생성 (RSA-4096)"""
-        if rsa is None:
-            raise CryptoDependencyError("RSA key generation requires the cryptography package")
-        private_key = rsa.generate_private_key(
+        rsa_module = require_crypto(rsa, "RSA key generation requires the cryptography package")
+        private_key = rsa_module.generate_private_key(
             public_exponent=65537,
             key_size=4096,
-            backend=default_backend()
+            backend=crypto_backend()
         )
         public_key = private_key.public_key()
         return private_key, public_key
     
     def encrypt_with_public_key(self, public_key, data: bytes) -> bytes:
         """공개키로 암호화"""
-        if padding is None:
-            raise CryptoDependencyError("RSA-OAEP requires the cryptography package")
+        padding_module = require_crypto(padding, "RSA-OAEP requires the cryptography package")
+        hashes_module = require_crypto(hashes, "RSA-OAEP hashes require the cryptography package")
         return public_key.encrypt(
             data,
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
+            padding_module.OAEP(
+                mgf=padding_module.MGF1(algorithm=hashes_module.SHA256()),
+                algorithm=hashes_module.SHA256(),
                 label=None
             )
         )
     
     def decrypt_with_private_key(self, private_key, ciphertext: bytes) -> bytes:
         """개인키로 복호화"""
-        if padding is None:
-            raise CryptoDependencyError("RSA-OAEP requires the cryptography package")
+        padding_module = require_crypto(padding, "RSA-OAEP requires the cryptography package")
+        hashes_module = require_crypto(hashes, "RSA-OAEP hashes require the cryptography package")
         return private_key.decrypt(
             ciphertext,
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
+            padding_module.OAEP(
+                mgf=padding_module.MGF1(algorithm=hashes_module.SHA256()),
+                algorithm=hashes_module.SHA256(),
                 label=None
             )
         )
