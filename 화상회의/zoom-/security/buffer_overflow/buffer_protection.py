@@ -37,6 +37,7 @@ class InputValidation:
     MAX_INPUT_LENGTH = 10000
     MAX_STRING_LENGTH = 1000
     MAX_ARRAY_LENGTH = 100
+    MAX_CODE_LENGTH = 4000
     MAX_REGEX_LENGTH = 256
 
     # ReDoS 위험이 큰 중첩 반복/모호한 반복 패턴의 최소 휴리스틱.
@@ -209,10 +210,14 @@ class SandboxExecution:
         if not validation.is_valid:
             return False, f"입력 검증 실패: {validation.error_message}"
 
+        if len(code) > self.input_validation.MAX_CODE_LENGTH:
+            return False, "코드 길이 제한 초과"
+
         # 위험 코드 패턴 확인
-        dangerous = ['exec', 'eval', 'compile', '__import__', 'open(', 'subprocess', 'socket']
+        normalized_code = code.lower()
+        dangerous = ('exec', 'eval', 'compile', '__import__', 'open(', 'subprocess', 'socket')
         for pattern in dangerous:
-            if pattern in code:
+            if pattern in normalized_code:
                 return False, f"위험한 코드 패턴: {pattern}"
 
         return True, "안전하게 실행됨"

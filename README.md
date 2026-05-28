@@ -8,6 +8,51 @@
 2. ZAP Baseline Scan으로 `zap-report.json`을 만든다.
 3. STRIDE-ZAP 비교 스크립트로 `stride_zap_comparison.md`를 생성한다.
 
+## 원본과 생성물 관리 규칙
+
+논문 본문을 수정할 때는 `paper_draft.md`만 직접 수정한다. 아래 파일은
+`paper_draft.md`에서 다시 생성되는 결과물이므로, 직접 고치지 않는다.
+
+- `논문_작성본_VSC.md`
+- `논문_작성본_VSC.html`
+- `논문 진짜 작성하는 곳.docx`
+- `논문_작성본_STRIDE_ZAP.docx`
+
+작성본을 다시 만들 때는 다음 명령을 실행한다.
+
+```powershell
+python .\tools\build_vsc_paper.py
+python .\tools\build_paper_docx.py
+```
+
+전체 검증과 생성본 갱신을 한 번에 수행하려면 다음 명령을 사용한다.
+
+```powershell
+.\tools\validate.ps1
+```
+
+논문 생성 과정을 건너뛰고 코드와 문서 검사만 수행하려면 다음처럼 실행한다.
+
+```powershell
+.\tools\validate.ps1 -SkipPaperBuild
+```
+
+## 영어 자료 한글 해설
+
+영어 논문 제목, OWASP/ZAP/STRIDE 용어가 어려운 사람은 먼저 `paper_korean_summary.md`를 보면 된다. 이 문서는 논문 전문 번역은 아니지만, 각 논문이 어떤 내용을 말하는지와 이 프로젝트의 어떤 보안 코드에 반영됐는지를 한글로 풀어 정리한다.
+
+| 파일 | 내용 |
+| --- | --- |
+| `paper_korean_summary.md` | 영어 논문 제목의 한글 의미, 핵심 주장, 프로젝트 반영 위치, 보안 용어 해설 |
+| `paper_draft.md` | 학회 양식에 옮기기 전 단계의 논문 초안 |
+| `논문_작성본_VSC.md` | VS Code Markdown Preview로 바로 확인할 수 있는 논문 작성본 |
+| `논문_작성본_VSC.html` | 브라우저 또는 VS Code HTML Preview로 확인할 수 있는 논문 작성본 |
+| `논문 진짜 작성하는 곳.docx` | 양식 파일에 실제 논문 본문을 반영한 작성본 |
+| `논문_작성본_STRIDE_ZAP.docx` | 같은 내용의 별도 작성본 |
+| `논문 진짜 작성하는 곳_원본백업.docx` | 수정 전 원본 양식 백업 |
+| `research_progress_status.md` | 6주 연구계획 대비 현재 진행 현황과 남은 작업 체크리스트 |
+| `jitsi_meet_security_lab.md` | Jitsi Meet을 로컬에서 실행하고 ZAP/Nmap/WebRTC 점검을 수행하는 한글 실습 절차와 결과 보고서 양식 |
+
 ## 연구 및 검증 방법
 
 - 실험 A: 화상회의 아키텍처를 기준으로 STRIDE 위협 모델링 수행
@@ -29,15 +74,18 @@
 
 아래 명령은 개발자용 기본 검증이다. 코드가 실행 가능한지 확인하는 용도이며, 실제 ZAP/STRIDE 실습 절차는 뒤쪽의 `OWASP ZAP 실습 순서`와 `STRIDE 실습 순서`를 따르면 된다.
 
+가장 간단한 방법은 `tools/validate.ps1`을 실행하는 것이다. 수동으로 한 단계씩
+확인하려면 아래 명령을 사용할 수 있다.
+
 ```powershell
 python -m compileall "화상회의\zoom-"
 javac -encoding UTF-8 -d .tmp_classes "화상회의\zoom-\security\authentication\AuthModule.java"
-java -cp .tmp_classes com.videoconference.security.authentication.AuthModule
+java -cp .tmp_classes AuthModule
 python "화상회의\zoom-\security\encryption\encryption.py"
 python "화상회의\zoom-\security\session_management\session_security.py"
 python "화상회의\zoom-\security\data_leak_prevention\data_protection.py"
 python "화상회의\zoom-\security\buffer_overflow\buffer_protection.py"
-python "화상회의\zoom-\security\assessment\threat_zap_comparison.py"
+python "화상회의\zoom-\security\assessment\threat_zap_comparison.py" --stride-json ".\reports\stride_findings.json" --zap-json ".\reports\zap-report.json" --zap-minutes 5 --output-md ".\reports\stride_zap_comparison.md" --output-json ".\reports\stride_zap_summary.json"
 ```
 
 비교 보고서만 생성하려면 마지막 명령을 실행하면 된다. 실제 ZAP JSON 결과가 있으면 `--zap-json` 옵션으로 입력해 같은 기준으로 비교할 수 있다.
@@ -51,10 +99,16 @@ python "화상회의\zoom-\security\assessment\threat_zap_comparison.py"
 | `zap-report.html` | ZAP Baseline Scan | 브라우저로 확인하는 ZAP 보고서 |
 | `zap-report.md` | ZAP Baseline Scan | Markdown 형식 ZAP 보고서 |
 | `zap-report.json` | ZAP Baseline Scan | STRIDE-ZAP 비교 스크립트 입력값 |
+| `zap-secure-report.html` | 보안 헤더 적용 후 ZAP 재스캔 | 브라우저로 확인하는 재스캔 보고서 |
+| `zap-secure-report.md` | 보안 헤더 적용 후 ZAP 재스캔 | Markdown 형식 재스캔 보고서 |
+| `zap-secure-report.json` | 보안 헤더 적용 후 ZAP 재스캔 | 현재 논문 정량 비교에 사용한 ZAP 입력값 |
+| `stride_findings.json` | STRIDE 분석 | A조 PDF 기반 STRIDE 위협 9건과 DREAD 점수 |
 | `stride_zap_comparison.md` | 비교 스크립트 | STRIDE와 ZAP 탐지 효과성 비교 보고서 |
 | `stride_zap_summary.json` | 비교 스크립트 | 비교 결과 원본 데이터 |
+| `stride_zap_secure_comparison.md` | 비교 스크립트 | 보안 헤더 적용 후 ZAP 기준 비교 보고서 |
+| `stride_zap_secure_summary.json` | 비교 스크립트 | 보안 헤더 적용 후 비교 결과 원본 데이터 |
 | `stride_sample_report.md` | STRIDE 샘플 실행 | 내장 STRIDE 샘플 기반 예비 보고서 |
-| `stride_findings.csv` 또는 `stride_findings.json` | 사용자가 직접 작성 | 팀이 직접 수행한 STRIDE 분석 결과 |
+| `stride_findings.csv` 또는 별도 JSON | 사용자가 직접 작성 | 팀이 직접 수행한 STRIDE 분석 결과를 추가로 반영할 때 사용 |
 
 ## OWASP ZAP 실습 순서
 
@@ -107,7 +161,7 @@ $browserUrl
 
 이 실습 대상은 정적 HTML 페이지지만, `secure_static_server.py`가 CSP, X-Frame-Options, X-Content-Type-Options, Permissions-Policy, Cross-Origin 계열 헤더를 추가한다. 따라서 ZAP 결과는 실제 운영용 화상회의 서버 전체에 대한 진단 결과가 아니라, 실습용 페이지와 로컬 보안 헤더 구성을 대상으로 한 예비 진단 결과로 해석한다.
 
-현재 `reports/zap-report.*` 파일은 기존 기준선 진단 산출물이다. 보안 헤더 서버를 적용한 뒤 ZAP을 다시 실행하면 CSP/브라우저 보안 헤더 관련 경고 변화까지 비교할 수 있다.
+현재 `reports/zap-report.*` 파일은 보안 헤더 적용 전 기준선 진단 산출물이고, `reports/zap-secure-report.*` 파일은 보안 헤더 서버를 적용한 뒤 Docker 기반 ZAP으로 재스캔한 산출물이다. 논문 본문의 정량 비교는 재스캔 결과를 기준으로 작성했다.
 
 비교를 위해 Python 기본 서버를 써야 한다면 아래처럼 실행할 수 있다. 다만 이 경우 ZAP에서 보안 헤더 누락 경고가 더 많이 나오는 것이 정상이다.
 
@@ -142,6 +196,12 @@ docker run --rm -v "${reportDir}:/zap/wrk/:rw" -t ghcr.io/zaproxy/zaproxy:stable
 
 여기서 `$PORT`는 3번에서 Python 웹 서버를 실행할 때 사용한 포트와 같은 번호로 맞춘다. Docker 컨테이너는 내 PC의 로컬 서버에 직접 `127.0.0.1`로 접근하지 못할 수 있으므로, Docker 명령에서는 `host.docker.internal` 주소를 사용한다. 브라우저나 ZAP Desktop에서는 `127.0.0.1`과 `$PORT`를 조합한 주소로 접속하고, Docker 명령에서는 `host.docker.internal`과 `$PORT`를 조합한 주소로 접속한다고 이해하면 된다.
 
+현재 논문에 반영한 재스캔 산출물과 같은 이름으로 저장하려면 출력 파일명만 아래처럼 바꾼다.
+
+```powershell
+docker run --rm -v "${reportDir}:/zap/wrk/:rw" -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t $targetUrl -m 5 -J zap-secure-report.json -r zap-secure-report.html -w zap-secure-report.md -I
+```
+
 명령이 끝나면 `reports` 폴더에 다음 파일이 생성된다.
 
 | 파일 | 용도 |
@@ -161,7 +221,7 @@ Start-Process ".\reports\zap-report.html"
 ZAP이 만든 JSON 보고서를 이 프로젝트의 비교 스크립트에 입력한다.
 
 ```powershell
-python "화상회의\zoom-\security\assessment\threat_zap_comparison.py" --zap-json ".\reports\zap-report.json" --zap-minutes 5 --output-md ".\reports\stride_zap_comparison.md" --output-json ".\reports\stride_zap_summary.json"
+python "화상회의\zoom-\security\assessment\threat_zap_comparison.py" --stride-json ".\reports\stride_findings.json" --zap-json ".\reports\zap-secure-report.json" --zap-minutes 5 --output-md ".\reports\stride_zap_comparison.md" --output-json ".\reports\stride_zap_summary.json"
 ```
 
 실행이 끝나면 `reports` 폴더에 비교 결과가 추가된다.
@@ -177,6 +237,7 @@ python "화상회의\zoom-\security\assessment\threat_zap_comparison.py" --zap-j
 - STRIDE만 탐지한 설계·구조적 위협
 - ZAP만 탐지한 실행 환경 취약점
 - OWASP Top 10 기준 커버리지
+- ZAP 경고별 오탐 검토
 - 우선적으로 보완해야 할 항목
 
 ### 6. ZAP Desktop으로 직접 눌러보는 방법
@@ -206,7 +267,7 @@ ZAP 결과는 높음, 중간, 낮음, 정보성 같은 위험도 등급으로 �
 예를 들어 plugin ID `10020`을 오탐으로 제외하려면 다음처럼 실행한다.
 
 ```powershell
-python "화상회의\zoom-\security\assessment\threat_zap_comparison.py" --zap-json ".\reports\zap-report.json" --zap-false-positive-plugin-ids "10020" --output-md ".\reports\stride_zap_comparison.md"
+python "화상회의\zoom-\security\assessment\threat_zap_comparison.py" --stride-json ".\reports\stride_findings.json" --zap-json ".\reports\zap-report.json" --zap-false-positive-plugin-ids "10020" --output-md ".\reports\stride_zap_comparison.md"
 ```
 
 ### 8. 자주 막히는 부분

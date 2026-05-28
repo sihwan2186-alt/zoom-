@@ -224,13 +224,13 @@ class EncryptionModule:
         return bytes(a ^ b for a, b in zip(cipher, stream))
 
     def _keystream(self, key: bytes, nonce: bytes, length: int) -> bytes:
-        blocks = []
+        output = bytearray()
         counter = 0
-        while sum(len(block) for block in blocks) < length:
+        while len(output) < length:
             counter_bytes = counter.to_bytes(4, "big")
-            blocks.append(hmac.new(key, nonce + counter_bytes, hashlib.sha256).digest())
+            output.extend(hmac.new(key, nonce + counter_bytes, hashlib.sha256).digest())
             counter += 1
-        return b"".join(blocks)[:length]
+        return bytes(output[:length])
 
 
 class KeyManagement:

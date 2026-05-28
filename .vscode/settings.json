@@ -1,21 +1,48 @@
 {
     "postman.settings.dotenv-detection-notification-visibility": false,
     "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python.analysis.exclude": [
+        "**/node_modules",
+        "**/__pycache__",
+        "**/.*",
+        "**/.tmp_classes/**",
+        "**/.tmp_pdf/**",
+        "**/.tmp_pdf_text/**",
+        "**/security/authentication/bin/**"
+    ],
+    "python.analysis.ignore": [
+        "**/.tmp_pdf/**",
+        "**/.tmp_pdf_text/**"
+    ],
     "markdownlint.ignore": [
         "reports/**",
         "**/reports/**",
         ".tmp_pdf/**",
+        ".tmp_pdf_text/**",
+        ".tmp_classes/**",
         "**/.tmp_pdf/**"
     ],
+    "java.server.launchMode": "Standard",
+    "java.configuration.updateBuildConfiguration": "automatic",
     "java.errors.incompleteClasspath.severity": "ignore",
+    "java.project.sourcePaths": [
+        "\ud654\uc0c1\ud68c\uc758/zoom-/security/authentication"
+    ],
+    "java.project.outputPath": ".tmp_classes",
     "files.associations": {
         "**/.tmp_pdf/**/LICENSE": "plaintext",
         "**/.tmp_pdf/**/METADATA": "plaintext"
     },
     "files.watcherExclude": {
-        "**/.tmp_pdf/**": true
+        "**/.tmp_pdf/**": true,
+        "**/.tmp_pdf_text/**": true,
+        "**/.tmp_classes/**": true,
+        "**/security/authentication/bin/**": true
     },
     "search.exclude": {
-        "**/.tmp_pdf/**": true
+        "**/.tmp_pdf/**": true,
+        "**/.tmp_pdf_text/**": true,
+        "**/.tmp_classes/**": true,
+        "**/security/authentication/bin/**": true
     }
 }

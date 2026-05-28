@@ -70,6 +70,11 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = build_parser().parse_args()
     directory = args.directory.resolve()
+    if not directory.is_dir():
+        raise SystemExit(f"Static directory does not exist: {directory}")
+    if not 1 <= args.port <= 65535:
+        raise SystemExit("Port must be between 1 and 65535")
+
     handler = partial(SecureStaticHandler, directory=str(directory))
 
     with ThreadingHTTPServer((args.host, args.port), handler) as server:

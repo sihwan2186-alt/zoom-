@@ -1,6 +1,6 @@
 # 화상회의 STRIDE-ZAP 취약점 탐지 효과성 비교 최종본
 
-- 최종 정리일: 2026-05-21
+- 최종 정리일: 2026-05-27
 - 대상: WebRTC 기반 화상회의 보안 실습 코드
 - 연구 주제: 화상회의 아키텍처 환경에서 STRIDE 위협 모델링과 동적 자동화 진단 도구(OWASP ZAP)의 취약점 탐지 효과성 비교 분석
 
@@ -17,10 +17,12 @@ Zoom, Jitsi Meet 같은 제품명은 논문 제목, 참고 사례, 테스트용 
 | 구분 | 진행상황 |
 | --- | --- |
 | 연구 방향 | STRIDE 위협 모델링과 OWASP ZAP 동적 진단의 취약점 탐지 효과성 비교로 확정 |
-| 실험 A | 화상회의 아키텍처 기반 STRIDE 샘플 위협 항목과 DREAD 점수 체계 구성 |
+| 실험 A | A조가 작성한 `Microsoft Threat Modeling Tool 기반 STRIDE.pdf`의 STRIDE 9건과 DREAD 10점 척도 결과 반영 |
 | 실험 B | 실제 OWASP ZAP Baseline Scan 결과를 확보하고 OWASP Top 10 기준으로 매핑 |
 | 비교 분석 | 탐지 건수, 커버리지, 중복/단독 탐지, 오탐률, 위험도 가중 점수, 우선순위 항목 산출 |
 | 시각화 | Markdown 표와 Mermaid 기반 커버리지/탐지범위 그래프 출력 추가 |
+| 논문 초안 | `paper_draft.md`와 `논문 진짜 작성하는 곳.docx`에 초록, 서론, 선행연구, 연구방법, 분석결과, 결론, 참고문헌 작성 |
+| 진행 현황표 | `research_progress_status.md`에 6주 일정 대비 완료/잔여 작업 정리 |
 | 실험 대상 코드 | 인증, 세션, 암호화, 개인정보 보호, 입력 검증, 평가 모듈에 화상회의 특화 보안 요소 반영 |
 | 검증 | Python/Java 컴파일, 주요 보안 모듈 실행, 실제 ZAP JSON 기반 STRIDE-ZAP 비교 산출물 생성 검증 완료 |
 
@@ -85,19 +87,21 @@ Zoom, Jitsi Meet 같은 제품명은 논문 제목, 참고 사례, 테스트용 
 
 ## 3. 논문 기반 반영 근거
 
-| 논문 파일 | 논문 제목 | 보완에 활용한 내용 | 반영 위치 |
-| --- | --- | --- | --- |
-| `1601.00184v1.pdf` | The Security of WebRTC | WebRTC의 중단, 변조, 도청 위협 | STRIDE 항목, 미디어 AAD, replay 탐지 |
-| `1709.05395v1.pdf` | One Leak Will Sink A Ship: WebRTC IP Address Leaks | WebRTC IP 주소 노출과 네트워크 식별 위험 | ICE 후보 마스킹, P2P 제한, TURN relay 권장 설정 |
-| `1908.05901v1.pdf` | Evaluating User Perception of Multi-Factor Authentication | MFA의 보안 효과와 사용성 한계 | TOTP, MFA 실패 잠금, 코드 재사용 방지 |
-| `2007.01059v1.pdf` | Zooming Into Video Conferencing Privacy and Security Threats | 공개 회의 캡처의 얼굴/이름/사용자명 재식별 위험 | 표시명/회의 링크/이미지 URL 마스킹, CSP/referrer/sandbox |
-| `2212.02740v2.pdf` | Stealthy Peers | WebRTC P2P/peer-assisted 구조의 노출과 오염 위험 | P2P 비활성화 권장, privacy advisor 설정 |
-| `2406.11618v4.pdf` | SoK: Regular Expression Denial of Service | ReDoS 취약 정규식 패턴 | 정규식 길이/구조 검증, 안전 검색 API |
-| `000000100869_20260512170757.pdf` | 화상회의 시스템에서 타원곡선암호를 이용한 사용자 인증 및 그룹 키 합의 방식 | 화상회의 사용자 인증과 그룹 키 합의 필요성 | 회의 epoch 키 갱신 모델 |
-| `3498335.pdf` | Security and Privacy in Unified Communication | Unified Communication 보안/프라이버시 위협 분류 | STRIDE 샘플 항목 확장 |
-| `electronics-12-01247-v2.pdf` | Exploring Personal Data Processing in Video Conferencing Apps | 화상회의 앱의 제3자 데이터 전송과 개인정보 처리 문제 | 제3자 요청 차단, 보존기간 정책 |
-| `팀6 - vuln-jwt-lab.pdf` | Towards a Threat Model and Security Analysis of Video Conferencing Systems | 화상회의 시스템 위협 모델과 JWT 위험 | 회의방/역할 바인딩 토큰, STRIDE-ZAP 비교 |
-| `08887256.pdf` | 제목 확인 필요 | 자동 텍스트 추출 실패 | OCR 또는 수동 확인 전까지 코드 근거로 사용하지 않음 |
+| 논문 파일 | 원문 제목 | 한글 제목/쉬운 의미 | 보완에 활용한 내용 | 반영 위치 |
+| --- | --- | --- | --- | --- |
+| `1601.00184v1.pdf` | The Security of WebRTC | WebRTC 보안 분석 | WebRTC의 중단, 변조, 도청 위협 | STRIDE 항목, 미디어 AAD, replay 탐지 |
+| `1709.05395v1.pdf` | One Leak Will Sink A Ship: WebRTC IP Address Leaks | WebRTC IP 주소 노출 위험 | WebRTC IP 주소 노출과 네트워크 식별 위험 | ICE 후보 마스킹, P2P 제한, TURN relay 권장 설정 |
+| `1908.05901v1.pdf` | Evaluating User Perception of Multi-Factor Authentication | 다단계 인증에 대한 사용자 인식 평가 | MFA의 보안 효과와 사용성 한계 | TOTP, MFA 실패 잠금, 코드 재사용 방지 |
+| `2007.01059v1.pdf` | Zooming Into Video Conferencing Privacy and Security Threats | 화상회의 개인정보와 보안 위협 분석 | 공개 회의 캡처의 얼굴/이름/사용자명 재식별 위험 | 표시명/회의 링크/이미지 URL 마스킹, CSP/referrer/sandbox |
+| `2212.02740v2.pdf` | Stealthy Peers | 은밀한 피어와 P2P 위험 | WebRTC P2P/peer-assisted 구조의 노출과 오염 위험 | P2P 비활성화 권장, privacy advisor 설정 |
+| `2406.11618v4.pdf` | SoK: Regular Expression Denial of Service | 정규식 서비스 거부 공격 정리 | ReDoS 취약 정규식 패턴 | 정규식 길이/구조 검증, 안전 검색 API |
+| `000000100869_20260512170757.pdf` | 화상회의 시스템에서 타원곡선암호를 이용한 사용자 인증 및 그룹 키 합의 방식 | 화상회의 사용자 인증과 그룹 키 합의 | 화상회의 사용자 인증과 그룹 키 합의 필요성 | 회의 epoch 키 갱신 모델 |
+| `3498335.pdf` | Security and Privacy in Unified Communication | 통합 커뮤니케이션 보안과 개인정보 | Unified Communication 보안/프라이버시 위협 분류 | STRIDE 샘플 항목 확장 |
+| `electronics-12-01247-v2.pdf` | Exploring Personal Data Processing in Video Conferencing Apps | 화상회의 앱의 개인정보 처리 분석 | 화상회의 앱의 제3자 데이터 전송과 개인정보 처리 문제 | 제3자 요청 차단, 보존기간 정책 |
+| `팀6 - vuln-jwt-lab.pdf` | Towards a Threat Model and Security Analysis of Video Conferencing Systems | 화상회의 시스템 위협 모델과 보안 분석 | 화상회의 시스템 위협 모델과 JWT 위험 | 회의방/역할 바인딩 토큰, STRIDE-ZAP 비교 |
+| `08887256.pdf` | 제목 확인 필요 | 수동 확인 필요 자료 | 자동 텍스트 추출 실패 | OCR 또는 수동 확인 전까지 코드 근거로 사용하지 않음 |
+
+영어 제목과 용어가 어려운 경우 `paper_korean_summary.md`에 논문별 한글 설명과 보안 용어 해설을 별도로 정리했다.
 
 ## 4. 실험 대상 보안 요소
 
@@ -123,21 +127,21 @@ Zoom, Jitsi Meet 같은 제품명은 논문 제목, 참고 사례, 테스트용 
 | `화상회의/zoom-/security/encryption/encryption.py` | AES-GCM 우선 사용, 데모 fallback 제한 옵션, 회의별 AAD, replay 탐지, epoch 키 스케줄 | 미디어 변조/재전송/참가자 변경 후 키 노출 위험 감소 |
 | `화상회의/zoom-/security/data_leak_prevention/data_protection.py` | 회의 링크/표시명/ICE 후보/이미지 URL 마스킹, 보존기간 정책, 개인정보 보호 설정 생성기 | 회의 메타데이터와 개인정보 유출 감소 |
 | `화상회의/zoom-/security/buffer_overflow/buffer_protection.py` | 회의 ID/표시명 검증, ReDoS 위험 정규식 검증, 안전 검색 API, 스캔 범위 검증 | 입력 기반 공격과 무단 스캔 오용 방지 |
-| `화상회의/zoom-/security/assessment/threat_zap_comparison.py` | `PAPER_EVIDENCE`, 화상회의 특화 STRIDE 항목, ZAP 경고와 OWASP Top 10 비교 | 설계 위협과 자동 진단 결과를 함께 설명 가능 |
+| `화상회의/zoom-/security/assessment/threat_zap_comparison.py` | `PAPER_EVIDENCE`, 화상회의 특화 STRIDE 항목, ZAP 경고와 OWASP Top 10 비교, ZAP 경고별 오탐 검토표 | 설계 위협과 자동 진단 결과를 함께 설명 가능 |
 | `화상회의/zoom-/client/index.html` | 외부 CSS/JS 분리, CSP, referrer 차단, sandbox iframe, 난수 기반 회의 ID, 회의 ID allow-list, privacy URL 옵션 | 브라우저 측 회의 링크/제3자 요청/임베드 위험 완화 |
 | `화상회의/zoom-/client/secure_static_server.py` | CSP, X-Frame-Options, X-Content-Type-Options, Permissions-Policy, Cross-Origin 계열 헤더, no-store 캐시 정책 적용 | ZAP이 지적한 보안 헤더 누락과 서버 버전 노출 위험 완화 |
 | `.gitignore` | `.tmp_pdf/`, `.tmp_pdf_text/`, `reports/` 제외 | 논문 텍스트 추출 임시 산출물과 실습 보고서 산출물 관리 |
 
 ## 6. 실제 실험 결과 입력 위치
 
-현재 실제 ZAP Baseline Scan 기준선 결과는 `reports/zap-report.json`, `reports/zap-report.md`, `reports/zap-report.html`로 확보했다. 이후 ZAP 경고 중 보안 헤더와 CSP 관련 항목을 줄이기 위해 클라이언트의 inline CSS/JS를 분리하고 `secure_static_server.py`를 추가했다. 직접 작성한 STRIDE CSV/JSON은 아직 별도 입력하지 않았으므로, 비교 결과는 내장 STRIDE 샘플 12건과 실제 ZAP JSON을 결합한 상태다.
+현재 실제 ZAP Baseline Scan 기준선 결과는 `reports/zap-report.json`, `reports/zap-report.md`, `reports/zap-report.html`로 확보했다. 이후 ZAP 경고 중 보안 헤더와 CSP 관련 항목을 줄이기 위해 클라이언트의 inline CSS/JS를 분리하고 `secure_static_server.py`를 추가했다. Docker 기반 재스캔 결과는 `reports/zap-secure-report.json`, `reports/zap-secure-report.md`, `reports/zap-secure-report.html`로 저장했다. 실험 A의 STRIDE 결과는 A조의 `Microsoft Threat Modeling Tool 기반 STRIDE.pdf`를 기준으로 `reports/stride_findings.json`에 9건으로 분리했으며, 현재 논문 본문과 비교 결과는 이 STRIDE 입력 파일과 보안 헤더 적용 후 ZAP JSON을 결합한 상태다.
 
 | 실험 산출물 | 입력/반영 위치 | 갱신 내용 |
 | --- | --- | --- |
-| ZAP JSON 보고서 | `reports/zap-report.json`과 `threat_zap_comparison.py --zap-json` 옵션 | 실제 ZAP 경고 13건, 인스턴스 19건, 위험도, OWASP Top 10 매핑 반영 |
-| 직접 작성한 STRIDE CSV/JSON | `threat_zap_comparison.py --stride-csv` 또는 `--stride-json` 옵션 | 팀이 직접 식별한 STRIDE 위협, DREAD 점수, 대응 우선순위 반영 필요 |
-| STRIDE-ZAP 비교 보고서 | `reports/stride_zap_comparison.md` | 중복 탐지, STRIDE 단독 탐지, ZAP 단독 탐지, 결합 커버리지 생성 완료 |
-| 최종 해석 | 이 문서의 `검증 결과`와 `최종 결론` | 실제 ZAP 결과 기반 해석을 반영하고, STRIDE 직접 분석 결과가 생기면 추가 갱신 |
+| ZAP JSON 보고서 | `reports/zap-secure-report.json`과 `threat_zap_comparison.py --zap-json` 옵션 | 보안 헤더 적용 후 ZAP 경고 4건, 인스턴스 8건, 위험도, OWASP Top 10 매핑 반영 |
+| A조 STRIDE JSON | `reports/stride_findings.json`과 `threat_zap_comparison.py --stride-json` 옵션 | A조 STRIDE 위협 9건, DREAD 10점 척도 점수, OWASP Top 10 매핑 반영 |
+| STRIDE-ZAP 비교 보고서 | `reports/stride_zap_comparison.md`, `reports/stride_zap_secure_comparison.md` | 중복 탐지, STRIDE 단독 탐지, ZAP 단독 탐지, 결합 커버리지, ZAP 오탐 검토표 생성 완료 |
+| 최종 해석 | 이 문서의 `검증 결과`와 `최종 결론` | 실제 ZAP 결과와 STRIDE JSON 기반 해석 반영 |
 
 ## 7. 남은 한계와 보완 과제
 
@@ -148,7 +152,7 @@ Zoom, Jitsi Meet 같은 제품명은 논문 제목, 참고 사례, 테스트용 
 | 실제 WebRTC Insertable Streams 또는 SFrame 연동 | 현재는 화상회의 미디어 AAD와 epoch 모델을 코드로 표현한 단계 |
 | 중앙 세션 저장소 또는 토큰 폐기 동기화 | 다중 서버 환경에서는 메모리 기반 세션/폐기 목록만으로 부족 |
 | OCR 기반 `08887256.pdf` 재검토 | 자동 추출 실패로 논문 내용을 근거에 반영하지 못함 |
-| 직접 작성한 STRIDE 결과, Nmap 결과, 배포 설정 파일 반영 | 실측 취약점과 설정 보완을 더 촘촘히 연결하려면 추가 실행 결과가 필요 |
+| Nmap 결과와 배포 설정 파일 반영 | 네트워크 노출과 운영 설정 보완을 더 촘촘히 연결하려면 추가 실행 결과가 필요 |
 | 녹화/채팅/자막/파일 공유의 E2EE 범위 구분 | 미디어 E2EE만으로 모든 부가기능이 보호되지는 않음 |
 | Cross-Origin-Embedder-Policy 운영 적용 | `require-corp`는 외부 화상회의 iframe과 충돌할 수 있어 로컬 실습 서버는 `credentialless`로 완화 적용 |
 
@@ -159,8 +163,7 @@ Zoom, Jitsi Meet 같은 제품명은 논문 제목, 참고 사례, 테스트용 
 | ZAP 보안 헤더 경고 | Python 기본 `http.server`는 CSP, X-Frame-Options, Permissions-Policy 같은 헤더를 보내지 않아 ZAP 경고가 집중됨 | `secure_static_server.py`를 추가해 로컬 실습 서버에서 보안 헤더를 명시적으로 전송하도록 보완 |
 | CSP unsafe-inline 경고 | 기존 `index.html`은 inline `<style>`, inline `<script>`, `onclick` 속성을 사용해 강한 CSP 적용이 어려웠음 | CSS를 `styles.css`, 스크립트를 `app.js`로 분리하고 DOM 이벤트 리스너 방식으로 변경 |
 | 서버 버전 노출 | 기본 Python 서버는 `Server` 응답 헤더에 구현 정보를 드러냄 | 보안 헤더 서버에서 `version_string()`을 재정의해 상세 버전 문자열 노출을 줄임 |
-| 보완 후 ZAP 재실행 | 기존 `reports/zap-report.*`는 보안 헤더 서버 추가 전 기준선 산출물임 | 보완 효과는 로컬 헤더 요청으로 확인했고, ZAP 재실행 결과 파일 갱신은 추가 검증 과제로 남김 |
-| 논문 `08887256.pdf` | 자동 텍스트 추출 결과가 512바이트 수준이라 근거로 쓰기 어려움 | OCR 또는 수동 확인 전까지 최종 근거 표에서는 사용하지 않음 |
+| 보완 후 ZAP 재실행 | 기존 `reports/zap-report.*`는 보안 헤더 서버 추가 전 기준선 산출물임 | 2026-05-27 Docker 기반 ZAP Baseline Scan을 재실행하여 `zap-secure-report.*` 생성 완료 |
 | 실제 운영 검증 | 로컬 정적 페이지와 임베드 기반 실습이라 운영 서버의 인증 DB, TURN, 녹화 저장소까지 검증하지는 못함 | 한계로 명시하고, 최종 배포 전 서버/네트워크 계층 검증 필요 |
 
 ## 8. 검증 결과
@@ -170,12 +173,12 @@ Zoom, Jitsi Meet 같은 제품명은 논문 제목, 참고 사례, 테스트용 
 ```powershell
 python -m compileall "화상회의\zoom-"
 javac -encoding UTF-8 -d .tmp_classes "화상회의\zoom-\security\authentication\AuthModule.java"
-java -cp .tmp_classes com.videoconference.security.authentication.AuthModule
+java -cp .tmp_classes AuthModule
 python "화상회의\zoom-\security\encryption\encryption.py"
 python "화상회의\zoom-\security\session_management\session_security.py"
 python "화상회의\zoom-\security\data_leak_prevention\data_protection.py"
 python "화상회의\zoom-\security\buffer_overflow\buffer_protection.py"
-python "화상회의\zoom-\security\assessment\threat_zap_comparison.py"
+python "화상회의\zoom-\security\assessment\threat_zap_comparison.py" --stride-json ".\reports\stride_findings.json" --zap-json ".\reports\zap-secure-report.json" --zap-minutes 5 --output-md ".\reports\stride_zap_comparison.md" --output-json ".\reports\stride_zap_summary.json"
 ```
 
 보안 헤더 서버는 별도 터미널에서 다음처럼 실행한다.
@@ -184,7 +187,7 @@ python "화상회의\zoom-\security\assessment\threat_zap_comparison.py"
 python "화상회의\zoom-\client\secure_static_server.py" --port 8082
 ```
 
-검증 명령은 성공했다. 현재 환경에는 `cryptography` 패키지가 없어 RSA 전자봉투 데모는 건너뛰었지만, 암호화 모듈의 기본 실행과 미디어 패킷 암복호화 검증은 통과했다. 보안 헤더 서버는 로컬 요청으로 CSP, X-Frame-Options, X-Content-Type-Options, Permissions-Policy, Cross-Origin 계열 헤더가 응답에 포함되는 것을 확인했다.
+검증 명령은 성공했다. 현재 환경에는 `cryptography` 패키지가 없어 RSA 전자봉투 데모는 건너뛰었지만, 암호화 모듈의 기본 실행과 미디어 패킷 암복호화 검증은 통과했다. 보안 헤더 서버는 로컬 요청으로 CSP, X-Frame-Options, X-Content-Type-Options, Permissions-Policy, Cross-Origin 계열 헤더가 응답에 포함되는 것을 확인했고, Docker 기반 OWASP ZAP Baseline Scan도 완료했다.
 
 비교 스크립트는 Markdown 보고서 안에 다음 산출물을 포함하도록 구성했다.
 
@@ -192,21 +195,23 @@ python "화상회의\zoom-\client\secure_static_server.py" --port 8082
 - 탐지 범위 매트릭스 표
 - OWASP Top 10 커버리지 막대 그래프
 - 탐지 범위 분포 그래프
+- ZAP 경고별 오탐 검토표
 - 오탐률, 위험도 가중 점수, 우선 검토 STRIDE 항목
 
 ### 실측 STRIDE-ZAP 비교 결과
 
-현재 비교값은 내장 STRIDE 샘플 12건과 실제 ZAP Baseline Scan JSON(`reports/zap-report.json`)을 기준으로 산출했다. STRIDE 직접 분석표가 별도 CSV/JSON으로 작성되면 같은 스크립트에 입력해 아래 수치를 갱신할 수 있다.
+현재 비교값은 A조 PDF를 반영한 `reports/stride_findings.json`의 STRIDE 위협 9건과 보안 헤더 적용 후 ZAP Baseline Scan JSON(`reports/zap-secure-report.json`)을 기준으로 산출했다. 보안 헤더 적용 전 1차 기준선 결과는 경고 13건, 인스턴스 19건이었고, 재스캔 후 경고 4건, 인스턴스 8건으로 감소하였다.
 
 | 지표 | STRIDE | ZAP | 결합/해석 |
 | --- | ---: | ---: | --- |
-| 유효 탐지/경고 건수 | 12건 | 13건 | ZAP 인스턴스 기준으로는 19건 |
+| 유효 탐지/경고 건수 | 9건 | 4건 | ZAP 인스턴스 기준으로는 8건 |
 | OWASP Top 10 커버리지 | 8/10, 80.0% | 1/10, 10.0% | 결합 커버리지 8/10, 80.0% |
 | 중복 탐지 카테고리 | A05 포함 | A05 포함 | Security Misconfiguration에서 공통 탐지 |
-| 단독 탐지 카테고리 | A01, A02, A03, A04, A07, A08, A09 | OWASP 미매핑 5건 | A06, A10은 현재 미탐지 |
-| 위험도 점수 | DREAD 합계 215 | 가중 위험 점수 39 | 우선 검토 STRIDE 항목은 D-01, I-03, S-01, I-01, I-02 |
-| ZAP 위험도 분포 | - | Medium 5, Low 6, Informational 2 | High 경고는 0건 |
-| 소요시간 지표 | 미입력 | 5.0분, 2.60건/분 | STRIDE 분석 시간 입력 시 생산성 비교 가능 |
+| 단독 탐지 카테고리 | A01, A02, A03, A04, A07, A08, A09 | OWASP 미매핑 1건 | A06, A10은 현재 미탐지 |
+| 위험도 점수 | DREAD 합계 347 | 가중 위험 점수 10 | 우선 검토 STRIDE 항목은 D-01, E-01, S-01, T-01, S-02 |
+| ZAP 위험도 분포 | - | Medium 1, Informational 3 | High 경고는 0건 |
+| 오탐 검토 | 0건 제외 | 오탐 후보 1건 | `10109 Modern Web Application`은 직접 취약점보다 앱 구조 식별 신호에 가까움 |
+| 소요시간 지표 | 미입력 | 5.0분, 0.80건/분 | STRIDE 분석 시간 입력 시 생산성 비교 가능 |
 
 #### OWASP Top 10 커버리지 그래프
 
@@ -232,26 +237,34 @@ pie title 탐지 범위 분포
 
 | OWASP 카테고리 | STRIDE | ZAP 경고 | ZAP 인스턴스 | 탐지 범위 | 근거 ID |
 | --- | ---: | ---: | ---: | --- | --- |
-| A01 Broken Access Control | 3 | 0 | 0 | STRIDE only | STRIDE S-01, E-01, S-02 |
-| A02 Cryptographic Failures | 4 | 0 | 0 | STRIDE only | STRIDE I-01, I-02, I-03, I-04 |
-| A03 Injection | 2 | 0 | 0 | STRIDE only | STRIDE T-01, T-02 |
-| A04 Insecure Design | 1 | 0 | 0 | STRIDE only | STRIDE E-01 |
-| A05 Security Misconfiguration | 6 | 8 | 12 | Both | STRIDE I-01, D-01, I-02, I-03, I-04, D-02; ZAP 10020, 10021, 10036, 10038, 10049, 10055 |
+| A01 Broken Access Control | 5 | 0 | 0 | STRIDE only | STRIDE E-01, S-01, S-02, E-02, S-03 |
+| A02 Cryptographic Failures | 1 | 0 | 0 | STRIDE only | STRIDE I-01 |
+| A03 Injection | 1 | 0 | 0 | STRIDE only | STRIDE T-01 |
+| A04 Insecure Design | 2 | 0 | 0 | STRIDE only | STRIDE E-01, E-02 |
+| A05 Security Misconfiguration | 2 | 3 | 7 | Both | STRIDE D-01, I-01; ZAP 10049, 10055 |
 | A06 Vulnerable and Outdated Components | 0 | 0 | 0 | None | - |
-| A07 Identification and Authentication Failures | 2 | 0 | 0 | STRIDE only | STRIDE S-01, S-02 |
-| A08 Software and Data Integrity Failures | 2 | 0 | 0 | STRIDE only | STRIDE T-01, T-02 |
+| A07 Identification and Authentication Failures | 3 | 0 | 0 | STRIDE only | STRIDE S-01, S-02, S-03 |
+| A08 Software and Data Integrity Failures | 1 | 0 | 0 | STRIDE only | STRIDE T-01 |
 | A09 Security Logging and Monitoring Failures | 1 | 0 | 0 | STRIDE only | STRIDE R-01 |
 | A10 Server-Side Request Forgery | 0 | 0 | 0 | None | - |
-| Unmapped | 0 | 5 | 7 | ZAP only | ZAP 10063, 10109, 90004 |
+| Unmapped | 0 | 1 | 1 | ZAP only | ZAP 10109 |
+
+#### ZAP 경고별 오탐 분석 요약
+
+| 구분 | Plugin ID | 판단 | 근거 |
+| --- | --- | --- | --- |
+| 유효 경고 | 10055 | 오탐 가능성 낮음 | CSP meta 정책 지시어 문제는 화상회의 브라우저 공격면을 키울 수 있음 |
+| 환경 의존 | 10049 | 오탐 가능성 중간 | Non-Storable Content는 정적 파일과 민감 응답 여부에 따라 실제 위험도가 달라짐 |
+| 오탐 후보 | 10109 | 오탐 가능성 높음 | Modern Web Application은 앱 구조 식별 신호에 가까워 직접 취약점으로 보기 어려움 |
 
 실제 ZAP 결과 기반 해석은 다음과 같다.
 
 | 비교 항목 | 확인 결과 |
 | --- | --- |
 | STRIDE 강점 | WebRTC IP 노출, 회의 링크 유출, 회의방 권한 혼동, 그룹 키 갱신, 미디어 도청/변조처럼 설계·구조 단계에서 드러나는 위협을 폭넓게 식별 |
-| ZAP 강점 | 보안 헤더 누락, 쿠키 속성 문제, XSS·주입 가능성, 노출된 엔드포인트처럼 실행 중인 웹 애플리케이션에서 관찰 가능한 취약점 탐지에 적합 |
+| ZAP 강점 | 보안 헤더, 브라우저 정책, 캐시 정책처럼 실행 중인 웹 애플리케이션에서 관찰 가능한 설정 문제를 탐지하고 보완 후 재검증하는 데 적합 |
 | 중복 탐지 영역 | A05 Security Misconfiguration에서 STRIDE의 설정·정보노출 위협과 ZAP의 보안 헤더·브라우저 정책 경고가 겹침 |
-| 단독 탐지 영역 | STRIDE는 A01/A02/A03/A04/A07/A08/A09 설계 위협을 더 넓게 포착했고, ZAP는 OWASP Top 10에 바로 매핑되지 않은 Modern Web Application, cacheable content 같은 실행 환경 신호를 추가로 탐지 |
+| 단독 탐지 영역 | STRIDE는 A01/A02/A03/A04/A07/A08/A09 설계 위협을 더 넓게 포착했고, ZAP의 Top 10 단독 카테고리는 없었다. 다만 `10109 Modern Web Application`은 OWASP 미매핑 정보성 신호로 남았다. |
 | 종합 판단 | 두 방법은 대체 관계보다 보완 관계에 가깝다. STRIDE로 설계 위협을 선제적으로 정리하고 ZAP로 실행 환경의 취약점을 반복 검증하는 방식이 화상회의 보안 평가에 더 적합하다. |
 
 ## 9. 최종 결론

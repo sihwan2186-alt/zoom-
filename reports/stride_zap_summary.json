@@ -1,12 +1,12 @@
 {
   "taxonomy_version": "2021",
   "taxonomy_total_categories": 10,
-  "stride_total_raw": 12,
-  "stride_total": 12,
+  "stride_total_raw": 9,
+  "stride_total": 9,
   "stride_false_positive_count": 0,
-  "zap_total_raw": 13,
-  "zap_total": 13,
-  "zap_instance_total": 19,
+  "zap_total_raw": 4,
+  "zap_total": 4,
+  "zap_instance_total": 8,
   "zap_false_positive_count": 0,
   "stride_owasp_coverage": 8,
   "zap_owasp_coverage": 1,
@@ -29,22 +29,22 @@
     "A09"
   ],
   "zap_only_categories": [],
-  "unmapped_zap_alerts": 5,
+  "unmapped_zap_alerts": 1,
   "zap_false_positive_rate": 0.0,
+  "zap_false_positive_candidate_count": 1,
   "stride_false_positive_rate": 0.0,
   "zap_risk_distribution": {
-    "Medium": 5,
-    "Low": 6,
-    "Informational": 2
+    "Medium": 1,
+    "Informational": 3
   },
-  "zap_weighted_risk_score": 39,
-  "stride_weighted_dread_score": 215,
+  "zap_weighted_risk_score": 10,
+  "stride_weighted_dread_score": 347,
   "high_priority_stride": [
     "D-01",
-    "I-03",
+    "E-01",
     "S-01",
-    "I-01",
-    "I-02"
+    "T-01",
+    "S-02"
   ],
   "time_minutes": {
     "stride": null,
@@ -52,83 +52,74 @@
   },
   "findings_per_minute": {
     "stride": null,
-    "zap": 2.6
+    "zap": 0.8
   },
   "matrix": [
     {
       "category": "A01 Broken Access Control",
-      "stride_count": 3,
+      "stride_count": 5,
       "zap_alert_count": 0,
       "zap_instance_count": 0,
       "detected_by_both": false,
       "method_scope": "STRIDE only",
       "stride_ids": [
-        "S-01",
         "E-01",
-        "S-02"
+        "S-01",
+        "S-02",
+        "E-02",
+        "S-03"
       ],
       "zap_plugin_ids": []
     },
     {
       "category": "A02 Cryptographic Failures",
-      "stride_count": 4,
-      "zap_alert_count": 0,
-      "zap_instance_count": 0,
-      "detected_by_both": false,
-      "method_scope": "STRIDE only",
-      "stride_ids": [
-        "I-01",
-        "I-02",
-        "I-03",
-        "I-04"
-      ],
-      "zap_plugin_ids": []
-    },
-    {
-      "category": "A03 Injection",
-      "stride_count": 2,
-      "zap_alert_count": 0,
-      "zap_instance_count": 0,
-      "detected_by_both": false,
-      "method_scope": "STRIDE only",
-      "stride_ids": [
-        "T-01",
-        "T-02"
-      ],
-      "zap_plugin_ids": []
-    },
-    {
-      "category": "A04 Insecure Design",
       "stride_count": 1,
       "zap_alert_count": 0,
       "zap_instance_count": 0,
       "detected_by_both": false,
       "method_scope": "STRIDE only",
       "stride_ids": [
-        "E-01"
+        "I-01"
+      ],
+      "zap_plugin_ids": []
+    },
+    {
+      "category": "A03 Injection",
+      "stride_count": 1,
+      "zap_alert_count": 0,
+      "zap_instance_count": 0,
+      "detected_by_both": false,
+      "method_scope": "STRIDE only",
+      "stride_ids": [
+        "T-01"
+      ],
+      "zap_plugin_ids": []
+    },
+    {
+      "category": "A04 Insecure Design",
+      "stride_count": 2,
+      "zap_alert_count": 0,
+      "zap_instance_count": 0,
+      "detected_by_both": false,
+      "method_scope": "STRIDE only",
+      "stride_ids": [
+        "E-01",
+        "E-02"
       ],
       "zap_plugin_ids": []
     },
     {
       "category": "A05 Security Misconfiguration",
-      "stride_count": 6,
-      "zap_alert_count": 8,
-      "zap_instance_count": 12,
+      "stride_count": 2,
+      "zap_alert_count": 3,
+      "zap_instance_count": 7,
       "detected_by_both": true,
       "method_scope": "Both",
       "stride_ids": [
-        "I-01",
         "D-01",
-        "I-02",
-        "I-03",
-        "I-04",
-        "D-02"
+        "I-01"
       ],
       "zap_plugin_ids": [
-        "10020",
-        "10021",
-        "10036",
-        "10038",
         "10049",
         "10055"
       ]
@@ -145,27 +136,27 @@
     },
     {
       "category": "A07 Identification and Authentication Failures",
-      "stride_count": 2,
+      "stride_count": 3,
       "zap_alert_count": 0,
       "zap_instance_count": 0,
       "detected_by_both": false,
       "method_scope": "STRIDE only",
       "stride_ids": [
         "S-01",
-        "S-02"
+        "S-02",
+        "S-03"
       ],
       "zap_plugin_ids": []
     },
     {
       "category": "A08 Software and Data Integrity Failures",
-      "stride_count": 2,
+      "stride_count": 1,
       "zap_alert_count": 0,
       "zap_instance_count": 0,
       "detected_by_both": false,
       "method_scope": "STRIDE only",
       "stride_ids": [
-        "T-01",
-        "T-02"
+        "T-01"
       ],
       "zap_plugin_ids": []
     },
@@ -194,16 +185,60 @@
     {
       "category": "Unmapped",
       "stride_count": 0,
-      "zap_alert_count": 5,
-      "zap_instance_count": 7,
+      "zap_alert_count": 1,
+      "zap_instance_count": 1,
       "detected_by_both": false,
       "method_scope": "ZAP only",
       "stride_ids": [],
       "zap_plugin_ids": [
-        "10063",
-        "10109",
-        "90004"
+        "10109"
       ]
+    }
+  ],
+  "zap_review": [
+    {
+      "plugin_id": "10055",
+      "name": "CSP: Meta Policy Invalid Directive",
+      "risk": "Medium",
+      "confidence": "3",
+      "instance_count": 1,
+      "owasp_category": "A05 Security Misconfiguration",
+      "triage": "유효 경고",
+      "false_positive_likelihood": "낮음",
+      "analysis": "CSP fallback 지시어 누락 또는 unsafe-inline은 브라우저 정책 우회면을 넓힌다."
+    },
+    {
+      "plugin_id": "10055",
+      "name": "CSP: Header & Meta",
+      "risk": "Informational",
+      "confidence": "3",
+      "instance_count": 1,
+      "owasp_category": "A05 Security Misconfiguration",
+      "triage": "유효 경고",
+      "false_positive_likelihood": "낮음",
+      "analysis": "CSP fallback 지시어 누락 또는 unsafe-inline은 브라우저 정책 우회면을 넓힌다."
+    },
+    {
+      "plugin_id": "10109",
+      "name": "Modern Web Application",
+      "risk": "Informational",
+      "confidence": "2",
+      "instance_count": 1,
+      "owasp_category": "Unmapped",
+      "triage": "오탐 후보",
+      "false_positive_likelihood": "높음",
+      "analysis": "Modern Web Application은 앱 구조 식별 신호에 가까워 직접 취약점으로 보기는 어렵다."
+    },
+    {
+      "plugin_id": "10049",
+      "name": "Non-Storable Content",
+      "risk": "Informational",
+      "confidence": "2",
+      "instance_count": 5,
+      "owasp_category": "A05 Security Misconfiguration",
+      "triage": "환경 의존",
+      "false_positive_likelihood": "중간",
+      "analysis": "정적 파일만 캐시되면 영향이 낮지만 회의 링크, 토큰, 사용자 정보가 포함되면 유효 취약점이다."
     }
   ],
   "references": [

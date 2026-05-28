@@ -5,6 +5,7 @@
 import re
 import hashlib
 import json
+import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Dict
@@ -13,14 +14,16 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 class MetadataProtection:
     """메타데이터 보호 모듈"""
+
+    SENSITIVE_FIELDS = {
+        'ip_address', 'email', 'phone', 'real_name',
+        'meeting_id', 'user_id', 'session_id', 'jwt', 'token',
+        'auth_token', 'password', 'secret', 'room_name', 'display_name',
+        'face_image', 'avatar_url', 'device_id', 'ice_candidate'
+    }
     
     def __init__(self):
-        self.sensitive_fields = [
-            'ip_address', 'email', 'phone', 'real_name',
-            'meeting_id', 'user_id', 'session_id', 'jwt', 'token',
-            'auth_token', 'password', 'secret', 'room_name', 'display_name',
-            'face_image', 'avatar_url', 'device_id', 'ice_candidate'
-        ]
+        self.sensitive_fields = self.SENSITIVE_FIELDS
 
     def anonymize_user_data(self, user_data: Dict) -> Dict:
         """사용자 데이터 익명화"""
@@ -63,7 +66,7 @@ class MetadataProtection:
         clean_data = {}
 
         for key, value in data.items():
-            if key.lower() not in self.sensitive_fields:
+            if not self.is_sensitive_field(key):
                 clean_data[key] = value
 
         return clean_data
@@ -84,9 +87,8 @@ class MetadataProtection:
         """로그에 남는 URL에서 JWT, token, password 등 민감 쿼리를 제거한다."""
         split = urlsplit(url)
         redacted = []
-        sensitive = set(self.sensitive_fields)
         for key, value in parse_qsl(split.query, keep_blank_values=True):
-            if key.lower() in sensitive:
+            if self.is_sensitive_field(key):
                 redacted.append((key, "redacted"))
             else:
                 redacted.append((key, value))
@@ -97,7 +99,7 @@ class MetadataProtection:
         result = {}
         for key, value in record.items():
             lower_key = key.lower()
-            if lower_key in self.sensitive_fields:
+            if self.is_sensitive_field(lower_key):
                 result[key] = "[redacted]"
             elif isinstance(value, str) and ('?' in value or 'token=' in value.lower() or 'jwt=' in value.lower()):
                 result[key] = self.redact_url(value)
@@ -116,47 +118,52 @@ class MetadataProtection:
             split.netloc,
             "/" + "/".join(path_parts) if path_parts else split.path,
             urlencode([
-                (key, "redacted" if key.lower() in set(self.sensitive_fields) else value)
+                (key, "redacted" if self.is_sensitive_field(key) else value)
                 for key, value in parse_qsl(split.query, keep_blank_values=True)
             ]),
             "",
         ))
 
+    def is_sensitive_field(self, field_name: str) -> bool:
+        return field_name.lower() in self.sensitive_fields
+
 
 class DataMasking:
     """데이터 마스킹 모듈"""
+
+    MASK_PATTERNS = {
+        'credit_card': re.compile(r'\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}'),
+        'ssn': re.compile(r'\d{6}-?\d{7}'),
+        'phone': re.compile(r'01[016789]-?\d{3,4}-?\d{4}'),
+        'email': re.compile(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'),
+        'jwt': re.compile(r'eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+'),
+    }
     
     def __init__(self):
-        self.mask_patterns = {
-            'credit_card': r'\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}',
-            'ssn': r'\d{6}-?\d{7}',
-            'phone': r'01[016789]-?\d{3,4}-?\d{4}',
-            'email': r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}',
-            'jwt': r'eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+'
-        }
+        self.mask_patterns = self.MASK_PATTERNS
 
     def mask_credit_card(self, text: str) -> str:
         """신용카드 번호 마스킹"""
         pattern = self.mask_patterns['credit_card']
-        return re.sub(pattern, '****-****-****-****', text)
+        return pattern.sub('****-****-****-****', text)
 
     def mask_ssn(self, text: str) -> str:
         """주민등록번호 마스킹"""
         pattern = self.mask_patterns['ssn']
-        return re.sub(pattern, '******-*******', text)
+        return pattern.sub('******-*******', text)
 
     def mask_phone(self, text: str) -> str:
         """전화번호 마스킹"""
         pattern = self.mask_patterns['phone']
-        return re.sub(pattern, '***-****-****', text)
+        return pattern.sub('***-****-****', text)
 
     def mask_email(self, text: str) -> str:
         """이메일 마스킹"""
-        return re.sub(self.mask_patterns['email'], '[email-redacted]', text)
+        return self.mask_patterns['email'].sub('[email-redacted]', text)
 
     def mask_jwt(self, text: str) -> str:
         """JWT 마스킹"""
-        return re.sub(self.mask_patterns['jwt'], '[jwt-redacted]', text)
+        return self.mask_patterns['jwt'].sub('[jwt-redacted]', text)
 
     def mask_all(self, text: str) -> str:
         """모든 민감 정보 마스킹"""
@@ -200,8 +207,6 @@ class MeetingDataProtection:
 
     def generate_temporary_link(self, meeting_id: str, expiry_minutes: int = 60) -> Dict:
         """임시 링크 생성"""
-        import secrets
-
         token = secrets.token_urlsafe(32)
         expiry = datetime.now().timestamp() + (expiry_minutes * 60)
 

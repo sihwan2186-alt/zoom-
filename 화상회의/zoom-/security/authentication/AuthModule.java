@@ -1,5 +1,3 @@
-package com.videoconference.security.authentication;
-
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;

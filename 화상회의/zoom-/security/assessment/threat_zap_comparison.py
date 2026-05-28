@@ -11,11 +11,14 @@ import json
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence, Set
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Set
 
 
 DEFAULT_TAXONOMY_VERSION = "2021"
 
+# OWASP Top 10의 영문 카테고리명은 공식 명칭이라 그대로 보존한다.
+# 대신 KOREAN_OWASP_HELP와 KOREAN_SECURITY_GLOSSARY를 보고서에 함께 출력해,
+# 영어를 모르는 실습자도 각 항목이 무엇을 뜻하는지 바로 확인할 수 있게 한다.
 OWASP_TAXONOMIES = {
     "2021": {
         "A01": "Broken Access Control",
@@ -79,14 +82,19 @@ ZAP_PLUGIN_TO_OWASP = {
         "10025": "A05",   # Sensitive Information in Referrer
         "10027": "A05",   # Suspicious Comments
         "10035": "A05",   # Strict-Transport-Security Header
+        "10036": "A05",   # Server Leaks Version Information
         "10038": "A05",   # Content Security Policy Header
+        "10049": "A05",   # Storable and Cacheable Content
         "10054": "A05",   # Cookie Without SameSite Attribute
+        "10055": "A05",   # CSP Scanner Findings
+        "10063": "A05",   # Permissions Policy Header
         "10096": "A06",   # Vulnerable JS Library
         "40012": "A03",   # Cross Site Scripting
         "40014": "A01",   # Absence of Anti-CSRF Tokens
         "40018": "A03",   # SQL Injection
         "40035": "A03",   # Server Side Code Injection
         "40045": "A01",   # Spring Actuator Information Leak
+        "90004": "A05",   # Cross-Origin Policy Headers
         "90022": "A05",   # Application Error Disclosure
         "90033": "A05",   # Loosely Scoped Cookie
     },
@@ -106,14 +114,19 @@ ZAP_PLUGIN_TO_OWASP = {
         "10025": "A02",
         "10027": "A02",
         "10035": "A04",
+        "10036": "A02",
         "10038": "A02",
+        "10049": "A02",
         "10054": "A02",
+        "10055": "A02",
+        "10063": "A02",
         "10096": "A03",
         "40012": "A05",
         "40014": "A01",
         "40018": "A05",
         "40035": "A05",
         "40045": "A01",
+        "90004": "A02",
         "90022": "A10",
         "90033": "A02",
     },
@@ -178,6 +191,86 @@ RISK_WEIGHT = {
     "High": 4,
     "Critical": 5,
 }
+
+ZAP_REVIEW_NOTES = {
+    "10020": {
+        "triage": "유효 경고",
+        "false_positive_likelihood": "낮음",
+        "analysis": "frame-ancestors 또는 X-Frame-Options가 없으면 회의 화면 clickjacking 위험이 남는다.",
+    },
+    "10021": {
+        "triage": "유효 경고",
+        "false_positive_likelihood": "낮음",
+        "analysis": "X-Content-Type-Options 누락은 브라우저 MIME sniffing 완화책이 빠진 상태다.",
+    },
+    "10036": {
+        "triage": "환경 의존",
+        "false_positive_likelihood": "중간",
+        "analysis": "Server 헤더의 상세 버전이 실제 공격 단서가 되는지 배포 서버 기준으로 확인해야 한다.",
+    },
+    "10038": {
+        "triage": "유효 경고",
+        "false_positive_likelihood": "낮음",
+        "analysis": "CSP 미설정은 XSS와 외부 리소스 삽입의 피해 범위를 키울 수 있다.",
+    },
+    "10049": {
+        "triage": "환경 의존",
+        "false_positive_likelihood": "중간",
+        "analysis": "정적 파일만 캐시되면 영향이 낮지만 회의 링크, 토큰, 사용자 정보가 포함되면 유효 취약점이다.",
+    },
+    "10055": {
+        "triage": "유효 경고",
+        "false_positive_likelihood": "낮음",
+        "analysis": "CSP fallback 지시어 누락 또는 unsafe-inline은 브라우저 정책 우회면을 넓힌다.",
+    },
+    "10063": {
+        "triage": "유효 경고",
+        "false_positive_likelihood": "낮음",
+        "analysis": "Permissions-Policy가 없으면 카메라, 마이크, 위치 같은 브라우저 기능 제한 의도가 불명확하다.",
+    },
+    "10109": {
+        "triage": "오탐 후보",
+        "false_positive_likelihood": "높음",
+        "analysis": "Modern Web Application은 앱 구조 식별 신호에 가까워 직접 취약점으로 보기는 어렵다.",
+    },
+    "90004": {
+        "triage": "유효 경고",
+        "false_positive_likelihood": "낮음",
+        "analysis": "COOP/CORP/COEP 누락은 교차 출처 격리와 리소스 경계 정책 미흡으로 해석할 수 있다.",
+    },
+}
+
+KOREAN_OWASP_HELP = {
+    "A01": "접근통제 실패: 권한 없는 사용자가 회의방, 관리자 기능, 참가자 제어 기능에 접근하는 문제",
+    "A02": "암호화 실패: 토큰, 미디어, 개인정보가 안전하게 암호화되지 않거나 키 관리가 약한 문제",
+    "A03": "주입 공격: XSS, SQL Injection, 명령 주입처럼 입력값이 코드나 명령으로 실행되는 문제",
+    "A04": "불안전한 설계: 구현 버그 이전에 구조, 권한 모델, 신뢰 경계 자체가 약한 문제",
+    "A05": "보안 설정 오류: CSP, X-Frame-Options, 쿠키 속성, 서버 헤더 같은 설정이 빠진 문제",
+    "A06": "취약하거나 오래된 구성요소: 오래된 라이브러리나 알려진 취약점이 있는 패키지 사용 문제",
+    "A07": "식별·인증 실패: 로그인, MFA, 토큰 검증, 세션 인증이 충분하지 않은 문제",
+    "A08": "소프트웨어·데이터 무결성 실패: 업데이트, 의존성, 미디어 데이터가 변조될 수 있는 문제",
+    "A09": "로깅·모니터링 실패: 누가 무엇을 했는지 기록하거나 탐지하지 못하는 문제",
+    "A10": "서버 측 요청 위조: 서버가 공격자가 지정한 내부/외부 주소로 요청하게 되는 문제",
+    "Unmapped": "OWASP Top 10에 바로 매핑하지 못한 ZAP 경고",
+}
+
+KOREAN_SECURITY_GLOSSARY = (
+    ("STRIDE", "시스템 구조를 보고 가능한 위협을 여섯 가지로 나누어 찾는 위협 모델링 방법"),
+    ("Spoofing", "다른 사용자, 호스트, 서버인 척하는 위장 공격"),
+    ("Tampering", "토큰, 요청, 미디어 데이터 등을 몰래 바꾸는 변조 공격"),
+    ("Repudiation", "나중에 행위를 부인할 수 있을 만큼 로그나 증거가 부족한 상태"),
+    ("Information Disclosure", "회의 링크, IP, 토큰, 사용자명 같은 정보가 새는 문제"),
+    ("Denial of Service", "서버나 브라우저가 과부하로 정상 동작하지 못하게 만드는 공격"),
+    ("Elevation of Privilege", "일반 참가자가 호스트나 관리자 권한을 얻는 문제"),
+    ("OWASP ZAP", "웹 페이지를 자동으로 점검해 보안 헤더, 쿠키, XSS 같은 문제를 찾는 도구"),
+    ("Baseline Scan", "비교적 안전하게 웹 응답을 관찰하는 ZAP 기본 진단"),
+    ("Active Scan", "실제 공격 패턴을 보내는 진단으로, 로컬 허가 환경에서만 사용해야 함"),
+    ("CSP", "브라우저가 허용할 스크립트, 이미지, 프레임 출처를 제한하는 콘텐츠 보안 정책"),
+    ("WebRTC ICE Candidate", "화상회의 연결을 위해 브라우저가 수집하는 IP/포트 후보 정보"),
+    ("TURN Relay", "참가자끼리 직접 연결하지 않고 중계 서버를 거쳐 미디어를 전달하는 방식"),
+    ("ReDoS", "위험한 정규식과 입력 때문에 처리 시간이 폭증하는 서비스 거부 공격"),
+    ("DREAD", "피해 규모, 재현성, 공격 난이도, 영향 범위, 발견 쉬움을 점수화하는 방식"),
+)
 
 REFERENCE_BASIS = (
     {
@@ -281,6 +374,15 @@ class DreadScore:
 
     @property
     def level(self) -> str:
+        if self.total > 25:
+            average = self.total / 5
+            if average >= 9:
+                return "Critical"
+            if average >= 7:
+                return "High"
+            if average >= 5:
+                return "Medium"
+            return "Low"
         if self.total >= 20:
             return "High"
         if self.total >= 13:
@@ -411,14 +513,14 @@ def normalize_stride_threat(value: object) -> str:
     return normalized
 
 
-def parse_dread_score(row: Dict[str, object]) -> DreadScore:
+def parse_dread_score(row: Mapping[Any, Any]) -> DreadScore:
     def score(*keys: str, default: int = 3) -> int:
         for key in keys:
             value = row.get(key)
             if value not in (None, ""):
                 numeric = int(float(str(value).strip()))
-                if numeric < 1 or numeric > 5:
-                    raise ValueError(f"DREAD score '{key}' must be between 1 and 5: {numeric}")
+                if numeric < 1 or numeric > 10:
+                    raise ValueError(f"DREAD score '{key}' must be between 1 and 10: {numeric}")
                 return numeric
         return default
 
@@ -431,7 +533,7 @@ def parse_dread_score(row: Dict[str, object]) -> DreadScore:
     )
 
 
-def stride_finding_from_row(row: Dict[str, object], index: int) -> StrideFinding:
+def stride_finding_from_row(row: Mapping[Any, Any], index: int) -> StrideFinding:
     finding_id = str(row.get("id") or row.get("ID") or f"CUSTOM-{index:02d}").strip()
     component = str(row.get("component") or row.get("Component") or "미지정").strip()
     threat = normalize_stride_threat(row.get("threat") or row.get("stride") or row.get("STRIDE"))
@@ -558,6 +660,10 @@ def compare_findings(
     zap_categories = set(zap_by_category) - {"Unmapped"}
     combined_categories = stride_categories | zap_categories
     taxonomy_total = len(OWASP_TAXONOMIES[taxonomy_version])
+    zap_review = [
+        build_zap_review_row(alert, taxonomy_version)
+        for alert in valid_zap_alerts
+    ]
 
     return {
         "taxonomy_version": taxonomy_version,
@@ -585,6 +691,10 @@ def compare_findings(
             len(raw_zap_alerts) - len(valid_zap_alerts),
             len(raw_zap_alerts),
         ),
+        "zap_false_positive_candidate_count": sum(
+            1 for row in zap_review
+            if row["false_positive_likelihood"] == "높음"
+        ),
         "stride_false_positive_rate": ratio(
             len(raw_stride_findings) - len(valid_stride_findings),
             len(raw_stride_findings),
@@ -611,6 +721,7 @@ def compare_findings(
             "zap": ratio(len(valid_zap_alerts), zap_minutes),
         },
         "matrix": matrix,
+        "zap_review": zap_review,
         "references": list(REFERENCE_BASIS),
         "paper_evidence": list(PAPER_EVIDENCE),
     }
@@ -630,6 +741,37 @@ def classify_method_scope(stride_detected: bool, zap_detected: bool) -> str:
     if zap_detected:
         return "ZAP only"
     return "None"
+
+
+def build_zap_review_row(alert: ZapAlert, taxonomy_version: str) -> Dict[str, object]:
+    """보고서에 넣을 ZAP 경고별 수동 검토 메모를 만든다."""
+    category = alert.mapped_category(taxonomy_version)
+    note = ZAP_REVIEW_NOTES.get(alert.plugin_id, {})
+    return {
+        "plugin_id": alert.plugin_id or "-",
+        "name": alert.name or "-",
+        "risk": alert.risk or "Informational",
+        "confidence": alert.confidence or "-",
+        "instance_count": alert.instance_count,
+        "owasp_category": category_label(category, taxonomy_version),
+        "triage": note.get("triage", "검토 필요"),
+        "false_positive_likelihood": note.get(
+            "false_positive_likelihood",
+            infer_false_positive_likelihood(alert, category),
+        ),
+        "analysis": note.get(
+            "analysis",
+            "응답 근거와 실제 악용 가능성을 확인해 유효 취약점인지 판단해야 한다.",
+        ),
+    }
+
+
+def infer_false_positive_likelihood(alert: ZapAlert, category: str) -> str:
+    if category == "Unmapped" or alert.risk == "Informational":
+        return "높음"
+    if alert.confidence in {"0", "1", "Low"}:
+        return "중간"
+    return "낮음"
 
 
 def sample_video_conference_stride_findings() -> List[StrideFinding]:
@@ -742,6 +884,26 @@ def render_markdown_report(summary: Dict) -> str:
         "화상회의 아키텍처 환경에서 STRIDE 위협 모델링과 OWASP ZAP의 "
         "취약점 탐지 효과성 비교 분석",
         "",
+        "## 영문 보안 용어 한글 해설",
+        "",
+        "| 영문 용어 | 한글 설명 |",
+        "| --- | --- |",
+    ]
+    for term, explanation in KOREAN_SECURITY_GLOSSARY:
+        lines.append(f"| {term} | {explanation} |")
+
+    lines.extend([
+        "",
+        "## OWASP Top 10 한글 풀이",
+        "",
+        "| 코드 | 공식 영문명 | 쉬운 한글 설명 |",
+        "| --- | --- | --- |",
+    ])
+    for category, english_label in OWASP_TAXONOMIES[taxonomy_version].items():
+        lines.append(f"| {category} | {english_label} | {KOREAN_OWASP_HELP.get(category, '')} |")
+
+    lines.extend([
+        "",
         "## 검증 방법",
         "",
         "- 실험 A: 화상회의 아키텍처와 데이터 흐름을 기준으로 STRIDE 위협 모델링 수행",
@@ -764,12 +926,13 @@ def render_markdown_report(summary: Dict) -> str:
         f"- 결합 시 STRIDE 대비 추가 카테고리: {summary['coverage_gain_vs_stride']}개",
         f"- 결합 시 ZAP 대비 추가 카테고리: {summary['coverage_gain_vs_zap']}개",
         f"- ZAP 오탐률: {format_percent(summary['zap_false_positive_rate'])}",
+        f"- ZAP 오탐 후보 경고: {summary['zap_false_positive_candidate_count']}건",
         f"- STRIDE 오탐률: {format_percent(summary['stride_false_positive_rate'])}",
-    ]
+    ])
 
     time_lines = render_time_metrics(summary)
     if time_lines:
-        lines.extend(["", "## 소요시간 기반 지표", *time_lines])
+        lines.extend(["", "## 소요시간 기반 지표", "", *time_lines])
 
     lines.extend(render_visualization(summary))
 
@@ -778,7 +941,7 @@ def render_markdown_report(summary: Dict) -> str:
         "## 탐지 범위 매트릭스",
         "",
         "| OWASP 카테고리 | STRIDE | ZAP 경고 | ZAP 인스턴스 | 탐지 범위 | 근거 ID |",
-        "|---|---:|---:|---:|---|---|",
+        "| --- | ---: | ---: | ---: | --- | --- |",
     ])
     for row in summary["matrix"]:
         evidence_ids = []
@@ -790,6 +953,25 @@ def render_markdown_report(summary: Dict) -> str:
             f"| {row['category']} | {row['stride_count']} | {row['zap_alert_count']} | "
             f"{row['zap_instance_count']} | {row['method_scope']} | "
             f"{'; '.join(evidence_ids) or '-'} |"
+        )
+
+    lines.extend([
+        "",
+        "## ZAP 경고별 오탐 검토",
+        "",
+        "| Plugin ID | 경고명 | 위험도 | OWASP 매핑 | 인스턴스 | 판정 | 오탐 가능성 | 해석 |",
+        "| --- | --- | --- | --- | ---: | --- | --- | --- |",
+    ])
+    for row in summary.get("zap_review", []):
+        lines.append(
+            f"| {escape_markdown_cell(row['plugin_id'])} "
+            f"| {escape_markdown_cell(row['name'])} "
+            f"| {escape_markdown_cell(row['risk'])} "
+            f"| {escape_markdown_cell(row['owasp_category'])} "
+            f"| {row['instance_count']} "
+            f"| {escape_markdown_cell(row['triage'])} "
+            f"| {escape_markdown_cell(row['false_positive_likelihood'])} "
+            f"| {escape_markdown_cell(row['analysis'])} |"
         )
 
     lines.extend([
@@ -808,7 +990,7 @@ def render_markdown_report(summary: Dict) -> str:
         "",
     ])
     for reference in summary["references"]:
-        lines.append(f"- {reference['name']}: {reference['use']} ({reference['url']})")
+        lines.append(f"- [{reference['name']}]({reference['url']}): {reference['use']}")
 
     lines.extend([
         "",
@@ -818,7 +1000,7 @@ def render_markdown_report(summary: Dict) -> str:
     for paper in summary.get("paper_evidence", []):
         lines.append(f"- {paper['title']} ({paper['file']}): {paper['use']}")
 
-    return "\n".join(lines)
+    return "\n".join(lines) + "\n"
 
 
 def render_visualization(summary: Dict) -> List[str]:
@@ -884,6 +1066,10 @@ def format_number(value: Optional[float]) -> str:
     return f"{value:.2f}"
 
 
+def escape_markdown_cell(value: object) -> str:
+    return str(value).replace("|", "\\|").replace("\n", " ").strip()
+
+
 def render_zap_baseline_command(target_url: str, minutes: int = 5) -> str:
     """OWASP ZAP Docker baseline scan 실행 예시를 반환한다."""
     return (
@@ -895,52 +1081,55 @@ def render_zap_baseline_command(target_url: str, minutes: int = 5) -> str:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Compare STRIDE threat modeling findings with OWASP ZAP JSON alerts."
+        description=(
+            "STRIDE 위협 모델링 결과와 OWASP ZAP JSON 경고를 비교해 "
+            "한글 설명이 포함된 보고서를 생성한다."
+        )
     )
     parser.add_argument(
         "--zap-json",
         type=Path,
-        help="OWASP ZAP JSON report path. If omitted, built-in sample alerts are used.",
+        help="OWASP ZAP JSON 보고서 경로. 생략하면 내장 샘플 ZAP 경고를 사용한다.",
     )
     parser.add_argument(
         "--stride-json",
         type=Path,
-        help="Custom STRIDE findings JSON path. If omitted, built-in sample findings are used.",
+        help="직접 작성한 STRIDE 결과 JSON 경로. 생략하면 내장 STRIDE 샘플을 사용한다.",
     )
     parser.add_argument(
         "--stride-csv",
         type=Path,
-        help="Custom STRIDE findings CSV path. Cannot be used with --stride-json.",
+        help="직접 작성한 STRIDE 결과 CSV 경로. --stride-json과 함께 사용할 수 없다.",
     )
     parser.add_argument(
         "--taxonomy",
         choices=sorted(OWASP_TAXONOMIES),
         default=DEFAULT_TAXONOMY_VERSION,
-        help="OWASP Top 10 taxonomy version used for mapping.",
+        help="OWASP Top 10 매핑에 사용할 기준 연도.",
     )
-    parser.add_argument("--stride-minutes", type=float, help="Elapsed STRIDE analysis time in minutes.")
-    parser.add_argument("--zap-minutes", type=float, help="Elapsed ZAP scan and triage time in minutes.")
+    parser.add_argument("--stride-minutes", type=float, help="STRIDE 분석에 걸린 시간(분).")
+    parser.add_argument("--zap-minutes", type=float, help="ZAP 스캔과 결과 확인에 걸린 시간(분).")
     parser.add_argument(
         "--stride-false-positive-ids",
         default="",
-        help="Comma-separated STRIDE finding IDs to exclude as false positives.",
+        help="오탐으로 제외할 STRIDE ID 목록. 쉼표로 구분한다.",
     )
     parser.add_argument(
         "--zap-false-positive-plugin-ids",
         default="",
-        help="Comma-separated ZAP plugin IDs to exclude as false positives.",
+        help="오탐으로 제외할 ZAP plugin ID 목록. 쉼표로 구분한다.",
     )
-    parser.add_argument("--output-md", type=Path, help="Write the markdown report to this path.")
-    parser.add_argument("--output-json", type=Path, help="Write the raw summary data to this path.")
+    parser.add_argument("--output-md", type=Path, help="생성한 Markdown 보고서를 저장할 경로.")
+    parser.add_argument("--output-json", type=Path, help="비교 결과 원본 JSON 데이터를 저장할 경로.")
     parser.add_argument(
         "--target-url",
-        help="Print an OWASP ZAP Docker baseline command for this target URL.",
+        help="이 대상 URL에 대한 OWASP ZAP Docker baseline 명령 예시를 출력한다.",
     )
     parser.add_argument(
         "--zap-spider-minutes",
         type=int,
         default=5,
-        help="Minutes for the suggested ZAP baseline spider command.",
+        help="ZAP baseline spider 실행 시간(분).",
     )
     return parser
 
