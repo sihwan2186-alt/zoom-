@@ -58,9 +58,9 @@ code {
 <body>
 <h1>Comparative Analysis of Vulnerability Detection Effectiveness between STRIDE Threat Modeling and OWASP ZAP in a Video Conferencing Architecture</h1>
 <p>화상회의 아키텍처 환경에서 STRIDE 위협 모델링과 동적 자동화 진단 도구(OWASP ZAP)의 취약점 탐지 효과성 비교 분석</p>
-<p>Gil Dong Hong1, Author Name2, Author Name3</p>
-<p>홍길동1, 저자이름2, 저자이름3</p>
-<p>1 소속학과, 대학교, 국가, E-mail</p>
+<p>Software Security Research Team</p>
+<p>소프트웨어 개발보안 연구팀</p>
+<p>소프트웨어 개발보안 수업 연구팀, Korea</p>
 <h2>초록</h2>
 <p>비대면 협업 환경의 확산으로 화상회의 시스템은 인증, 세션, 미디어 스트리밍, 녹화 저장소, 외부 연동 기능을 함께 포함하는 복합 웹 서비스가 되었다. 이러한 시스템은 일반 웹 애플리케이션 취약점뿐 아니라 회의방 권한, WebRTC 미디어 경로, ICE 후보를 통한 IP 노출, 그룹 키 갱신과 같은 구조적 위협을 함께 가진다. 본 연구는 화상회의 아키텍처를 대상으로 설계 기반 STRIDE 위협 모델링과 동적 자동화 진단 도구인 OWASP ZAP의 취약점 탐지 효과성을 비교하였다. 실험 A에서는 A조가 Microsoft Threat Modeling Tool 기반으로 정리한 STRIDE 위협 9건과 DREAD 점수를 입력 데이터로 사용하였다. 실험 B에서는 보안 헤더가 적용된 동일 웹 인터페이스를 Docker 기반 OWASP ZAP Baseline Scan으로 재진단하여 경고 4건, 인스턴스 8건을 수집하였다. 두 결과는 OWASP Top 10:2021 기준으로 매핑하였다. 분석 결과 STRIDE는 8개 카테고리(80.0%)를 포괄했으며, ZAP은 주로 A05 Security Misconfiguration 1개 카테고리(10.0%)에 집중되었다. 공통 탐지 영역은 A05였고, STRIDE는 A01, A02, A03, A04, A07, A08, A09에서 단독 탐지 효과를 보였다. ZAP 결과 중 직접 취약점으로 보기 어려운 정보성 경고는 1건으로 분류하였다. 또한 보안 헤더 적용 전 1차 ZAP 결과(13건, 19개 인스턴스)와 비교하면 경고 수가 감소하여, 자동화 진단이 구현 보완 효과를 반복적으로 확인하는 데 유용함을 보였다.</p>
 <p>두 실험의 장단점과 표현 가능 범위도 함께 비교하여, 실험 A안은 설계·구조 위험 설명에, 실험 B안은 실제 구현 상태 검증에 강점이 있음을 정리하였다.</p>
@@ -170,6 +170,7 @@ code {
 </tr>
 </tbody></table>
 <p>보안 헤더 적용 전 1차 ZAP Baseline Scan에서는 경고 13건과 인스턴스 19건이 수집되었다. 보안 헤더가 적용된 서버를 Docker 기반 ZAP으로 재스캔한 결과 경고는 4건, 인스턴스는 8건으로 감소하였다. 이는 ZAP이 STRIDE가 제시한 설계 위협을 대체하지는 못하지만, 보안 헤더와 브라우저 정책 같은 구현 보완의 효과를 반복적으로 검증하는 데 적합함을 보여준다.</p>
+<p>팀 실습 기준 STRIDE 수동 분석은 DFD 작성, STRIDE 분류, DREAD 점수 산정을 포함해 약 60~90분 범위로 정리하였다. 본 비교 보고서의 분당 지표는 중앙값인 75분을 사용했으며, ZAP Baseline Scan은 Docker 실행 옵션 기준 5분으로 기록하였다.</p>
 <p>[표 3] 실험 A/B 통계 비교표</p>
 <p>[Table 3] Statistical Comparison of Experiment A and Experiment B</p>
 <table>
@@ -221,6 +222,12 @@ code {
 <td>DREAD 합계 347</td>
 <td>가중 위험 점수 10</td>
 <td>점수 체계가 달라 직접 크기 비교보다 우선순위 참고용으로 사용함</td>
+</tr>
+<tr>
+<td>분석 소요시간</td>
+<td>60~90분, 지표 산정값 75분</td>
+<td>5분</td>
+<td>B안은 짧은 시간 안에 반복 측정이 가능함</td>
 </tr>
 <tr>
 <td>반복 측정성</td>
@@ -316,9 +323,10 @@ code {
 <td>0</td>
 <td>1</td>
 <td>1</td>
-<td>ZAP only</td>
+<td>Unmapped ZAP informational</td>
 </tr>
 </tbody></table>
+<p>ZAP 단독 OWASP Top 10 카테고리는 없었으나, OWASP Top 10에 직접 매핑되지 않는 정보성 경고 1건이 존재하였다. 따라서 본 연구에서는 해당 항목을 별도 오탐 후보로 분리하고, ZAP의 단독 Top 10 탐지 범위에는 포함하지 않았다.</p>
 <h3>4.3 오탐 분석</h3>
 <p>ZAP 재스캔 결과에서 A05 Security Misconfiguration에 매핑된 항목은 <code>10055 CSP: Meta Policy Invalid Directive</code>와 <code>10049 Non-Storable Content</code>였다. <code>10055</code>는 HTTP 응답 헤더와 HTML meta 정책이 동시에 존재하거나 일부 CSP 지시어가 브라우저 정책상 충분하지 않을 때 발생하며, 화상회의 화면의 스크립트·프레임 제어와 연결되므로 유효 경고로 판단하였다. <code>10049</code>는 정적 파일 캐시 정책에 따라 영향도가 달라지는 환경 의존 경고로 분류하였다. <code>10109 Modern Web Application</code>은 앱 구조 식별 신호에 가까워 직접 취약점으로 보기 어려우므로 오탐 후보로 분류하였다. 보안 헤더 적용 전에는 <code>10020</code>, <code>10021</code>, <code>10038</code>, <code>10063</code>, <code>90004</code> 등 헤더 누락 경고가 추가로 나타났으나, 재스캔에서는 해당 항목이 PASS로 전환되었다.</p>
 <h3>4.4 결과 해석</h3>

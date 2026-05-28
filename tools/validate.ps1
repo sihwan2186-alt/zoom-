@@ -90,6 +90,8 @@ try {
             ".\reports\stride_findings.json",
             "--zap-json",
             ".\reports\zap-secure-report.json",
+            "--stride-minutes",
+            "75",
             "--zap-minutes",
             "5",
             "--output-md",
@@ -98,6 +100,8 @@ try {
             ".\reports\stride_zap_summary.json"
         )
         python @comparisonArgs | Out-Null
+        Copy-Item ".\reports\stride_zap_comparison.md" ".\reports\stride_zap_secure_comparison.md" -Force
+        Copy-Item ".\reports\stride_zap_summary.json" ".\reports\stride_zap_secure_summary.json" -Force
     }
 
     if (-not $SkipPaperBuild) {

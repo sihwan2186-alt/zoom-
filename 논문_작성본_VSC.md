@@ -4,11 +4,11 @@
 
 화상회의 아키텍처 환경에서 STRIDE 위협 모델링과 동적 자동화 진단 도구(OWASP ZAP)의 취약점 탐지 효과성 비교 분석
 
-Gil Dong Hong1, Author Name2, Author Name3
+Software Security Research Team
 
-홍길동1, 저자이름2, 저자이름3
+소프트웨어 개발보안 연구팀
 
-1 소속학과, 대학교, 국가, E-mail
+소프트웨어 개발보안 수업 연구팀, Korea
 
 ## 초록
 
@@ -81,6 +81,8 @@ WebRTC 보안 연구는 브라우저 기반 실시간 통신에서 중간자 공
 
 보안 헤더 적용 전 1차 ZAP Baseline Scan에서는 경고 13건과 인스턴스 19건이 수집되었다. 보안 헤더가 적용된 서버를 Docker 기반 ZAP으로 재스캔한 결과 경고는 4건, 인스턴스는 8건으로 감소하였다. 이는 ZAP이 STRIDE가 제시한 설계 위협을 대체하지는 못하지만, 보안 헤더와 브라우저 정책 같은 구현 보완의 효과를 반복적으로 검증하는 데 적합함을 보여준다.
 
+팀 실습 기준 STRIDE 수동 분석은 DFD 작성, STRIDE 분류, DREAD 점수 산정을 포함해 약 60~90분 범위로 정리하였다. 본 비교 보고서의 분당 지표는 중앙값인 75분을 사용했으며, ZAP Baseline Scan은 Docker 실행 옵션 기준 5분으로 기록하였다.
+
 [표 3] 실험 A/B 통계 비교표
 [Table 3] Statistical Comparison of Experiment A and Experiment B
 
@@ -93,6 +95,7 @@ WebRTC 보안 연구는 브라우저 기반 실시간 통신에서 중간자 공
 | 미탐지 카테고리 | A06, A10 | A05 외 대부분 | B안은 실행 웹 응답 중심으로 범위가 좁음 |
 | 오탐 후보 | 0건 | 1건 | B안의 정보성 경고는 해석 검토가 필요함 |
 | 위험도 점수 | DREAD 합계 347 | 가중 위험 점수 10 | 점수 체계가 달라 직접 크기 비교보다 우선순위 참고용으로 사용함 |
+| 분석 소요시간 | 60~90분, 지표 산정값 75분 | 5분 | B안은 짧은 시간 안에 반복 측정이 가능함 |
 | 반복 측정성 | 분석자 재검토 필요 | 5분 스캔, 0.80건/분 | B안은 보완 후 재검증에 유리함 |
 
 ### 4.2 탐지 범위 매트릭스
@@ -112,7 +115,9 @@ WebRTC 보안 연구는 브라우저 기반 실시간 통신에서 중간자 공
 | A08 Software and Data Integrity Failures | 1 | 0 | 0 | STRIDE only |
 | A09 Security Logging and Monitoring Failures | 1 | 0 | 0 | STRIDE only |
 | A10 Server-Side Request Forgery | 0 | 0 | 0 | None |
-| Unmapped | 0 | 1 | 1 | ZAP only |
+| Unmapped | 0 | 1 | 1 | Unmapped ZAP informational |
+
+ZAP 단독 OWASP Top 10 카테고리는 없었으나, OWASP Top 10에 직접 매핑되지 않는 정보성 경고 1건이 존재하였다. 따라서 본 연구에서는 해당 항목을 별도 오탐 후보로 분리하고, ZAP의 단독 Top 10 탐지 범위에는 포함하지 않았다.
 
 ### 4.3 오탐 분석
 

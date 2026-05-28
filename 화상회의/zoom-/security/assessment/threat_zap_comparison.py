@@ -645,13 +645,16 @@ def compare_findings(
     for category in sorted(all_categories):
         stride_items = stride_by_category.get(category, [])
         zap_items = zap_by_category.get(category, [])
+        method_scope = classify_method_scope(bool(stride_items), bool(zap_items))
+        if category == "Unmapped" and zap_items and not stride_items:
+            method_scope = "Unmapped ZAP informational"
         matrix.append({
             "category": category_label(category, taxonomy_version),
             "stride_count": len(stride_items),
             "zap_alert_count": len(zap_items),
             "zap_instance_count": sum(alert.instance_count for alert in zap_items),
             "detected_by_both": bool(stride_items and zap_items),
-            "method_scope": classify_method_scope(bool(stride_items), bool(zap_items)),
+            "method_scope": method_scope,
             "stride_ids": [finding.id for finding in stride_items],
             "zap_plugin_ids": sorted({alert.plugin_id for alert in zap_items if alert.plugin_id}),
         })
@@ -980,8 +983,8 @@ def render_markdown_report(summary: Dict) -> str:
         "",
         f"- 중복 탐지 카테고리: {', '.join(summary['overlap_categories']) or '없음'}",
         f"- STRIDE 단독 카테고리: {', '.join(summary['stride_only_categories']) or '없음'}",
-        f"- ZAP 단독 카테고리: {', '.join(summary['zap_only_categories']) or '없음'}",
-        f"- OWASP 미매핑 ZAP 경고: {summary['unmapped_zap_alerts']}건",
+        f"- ZAP 단독 OWASP Top 10 카테고리: {', '.join(summary['zap_only_categories']) or '없음'}",
+        f"- OWASP Top 10에 직접 매핑되지 않는 ZAP 정보성 경고: {summary['unmapped_zap_alerts']}건",
         f"- STRIDE 총 DREAD 점수: {summary['stride_weighted_dread_score']}",
         f"- ZAP 가중 위험 점수: {summary['zap_weighted_risk_score']}",
         f"- 우선 검토 STRIDE 항목: {', '.join(summary['high_priority_stride']) or '없음'}",
@@ -1006,6 +1009,14 @@ def render_markdown_report(summary: Dict) -> str:
 def render_visualization(summary: Dict) -> List[str]:
     """Markdown 보고서에 포함할 Mermaid 기반 그래프를 만든다."""
     scope_counts = Counter(row["method_scope"] for row in summary["matrix"])
+    unmapped_zap_count = sum(
+        1 for row in summary["matrix"]
+        if row["category"] == "Unmapped" and row["zap_alert_count"]
+    )
+    zap_only_owasp_count = sum(
+        1 for row in summary["matrix"]
+        if row["method_scope"] == "ZAP only" and row["category"] != "Unmapped"
+    )
     taxonomy_total = summary["taxonomy_total_categories"]
     return [
         "",
@@ -1031,7 +1042,8 @@ def render_visualization(summary: Dict) -> List[str]:
         "pie title OWASP 카테고리별 탐지 범위",
         f"    \"Both\" : {scope_counts.get('Both', 0)}",
         f"    \"STRIDE only\" : {scope_counts.get('STRIDE only', 0)}",
-        f"    \"ZAP only\" : {scope_counts.get('ZAP only', 0)}",
+        f"    \"ZAP only\" : {zap_only_owasp_count}",
+        f"    \"Unmapped ZAP informational\" : {unmapped_zap_count}",
         f"    \"None\" : {scope_counts.get('None', 0)}",
         "```",
     ]

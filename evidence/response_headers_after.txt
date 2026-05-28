@@ -1,0 +1,17 @@
+HTTP/1.0 200 OK
+Server: SecureMeetLab
+Date: Thu, 28 May 2026 07:33:16 GMT
+Content-type: text/html
+Content-Length: 8965
+Last-Modified: Thu, 21 May 2026 07:44:24 GMT
+Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; frame-src https://meet.jit.si; connect-src 'self' https://meet.jit.si wss://meet.jit.si; img-src 'self' data: https://meet.jit.si; style-src 'self'; script-src 'self'; form-action 'self'
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+Referrer-Policy: no-referrer
+Permissions-Policy: camera=(self "https://meet.jit.si"), microphone=(self "https://meet.jit.si"), fullscreen=(self "https://meet.jit.si"), display-capture=(self "https://meet.jit.si"), geolocation=(), payment=(), usb=()
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: credentialless
+Cross-Origin-Resource-Policy: same-origin
+Cache-Control: no-store
+Pragma: no-cache
+

@@ -8,6 +8,34 @@
 2. ZAP Baseline Scan으로 `zap-report.json`을 만든다.
 3. STRIDE-ZAP 비교 스크립트로 `stride_zap_comparison.md`를 생성한다.
 
+## 빠른 실행 요약
+
+이 프로젝트는 STRIDE 위협 모델링 결과와 OWASP ZAP 진단 결과를 OWASP Top 10 기준으로 비교한다. 제출물 확인자는 아래 순서만 따라도 핵심 산출물을 재생성할 수 있다.
+
+### 1. 로컬 서버 실행
+
+```powershell
+cd ".\화상회의\zoom-\client"
+python .\secure_static_server.py --port 8000
+```
+
+### 2. ZAP Baseline Scan 실행
+
+다른 PowerShell 창에서 프로젝트 루트로 돌아온 뒤 실행한다.
+
+```powershell
+$reportDir = (Resolve-Path .\reports).Path
+docker run --rm -v "${reportDir}:/zap/wrk/:rw" -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://host.docker.internal:8000/ -m 5 -J zap-secure-report.json -r zap-secure-report.html -w zap-secure-report.md -I
+```
+
+### 3. STRIDE-ZAP 비교 보고서 생성
+
+```powershell
+python ".\화상회의\zoom-\security\assessment\threat_zap_comparison.py" --stride-json ".\reports\stride_findings.json" --zap-json ".\reports\zap-secure-report.json" --stride-minutes 75 --zap-minutes 5 --output-md ".\reports\stride_zap_comparison.md" --output-json ".\reports\stride_zap_summary.json"
+```
+
+팀 실습 기준 STRIDE 수동 분석 시간은 약 60~90분 범위로 정리했으며, 비교 스크립트에서는 중앙값인 75분을 사용한다. ZAP Baseline Scan 시간은 Docker 실행 옵션 기준 5분이다.
+
 ## 원본과 생성물 관리 규칙
 
 논문 본문을 수정할 때는 `paper_draft.md`만 직접 수정한다. 아래 파일은
@@ -85,7 +113,7 @@ python "화상회의\zoom-\security\encryption\encryption.py"
 python "화상회의\zoom-\security\session_management\session_security.py"
 python "화상회의\zoom-\security\data_leak_prevention\data_protection.py"
 python "화상회의\zoom-\security\buffer_overflow\buffer_protection.py"
-python "화상회의\zoom-\security\assessment\threat_zap_comparison.py" --stride-json ".\reports\stride_findings.json" --zap-json ".\reports\zap-report.json" --zap-minutes 5 --output-md ".\reports\stride_zap_comparison.md" --output-json ".\reports\stride_zap_summary.json"
+python "화상회의\zoom-\security\assessment\threat_zap_comparison.py" --stride-json ".\reports\stride_findings.json" --zap-json ".\reports\zap-secure-report.json" --stride-minutes 75 --zap-minutes 5 --output-md ".\reports\stride_zap_comparison.md" --output-json ".\reports\stride_zap_summary.json"
 ```
 
 비교 보고서만 생성하려면 마지막 명령을 실행하면 된다. 실제 ZAP JSON 결과가 있으면 `--zap-json` 옵션으로 입력해 같은 기준으로 비교할 수 있다.
