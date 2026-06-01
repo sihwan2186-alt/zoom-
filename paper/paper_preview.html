@@ -1,11 +1,9 @@
 <!doctype html>
 <html lang="ko">
-<!-- Generated from paper_draft.md. Edit paper_draft.md instead. -->
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>논문 작성본 VSC</title>
+  <title>STRIDE-ZAP 논문 미리보기</title>
   <style>body {
   color: #1f2933;
   font-family: "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
@@ -33,6 +31,12 @@ h3 {
 p {
   margin: 0.65rem 0;
 }
+.caption {
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin: 0.9rem 0 0.25rem;
+  text-align: center;
+}
 table {
   border-collapse: collapse;
   font-size: 0.92rem;
@@ -48,6 +52,13 @@ th {
   background: #eef5fb;
   font-weight: 700;
   text-align: center;
+}
+img {
+  border: 1px solid #d9e2ec;
+  display: block;
+  margin: 0.8rem auto 1.2rem;
+  max-width: 760px;
+  width: 100%;
 }
 code {
   background: #f0f4f8;
@@ -76,9 +87,10 @@ code {
 <h3>3.1 실험 대상</h3>
 <p>실험 대상은 WebRTC 기반 화상회의 아키텍처를 모사한 로컬 실습 환경이다. 분석 범위는 사용자, 브라우저 클라이언트, 인증 기능, 세션 관리, 회의방 권한, 미디어 경로, 개인정보 처리, 보안 헤더 설정을 포함한다. 오픈소스 Jitsi Meet 소스는 화상회의 환경 이해와 실습 절차 정리에 활용하였고, 실제 정량 비교는 로컬 실습 코드와 OWASP ZAP Baseline Scan 결과를 중심으로 수행하였다.</p>
 <h3>3.2 실험 A: STRIDE 위협 모델링</h3>
-<p>실험 A에서는 A조의 Microsoft Threat Modeling Tool 기반 STRIDE 결과를 사용하였다. 해당 자료는 Jitsi Meet DFD를 바탕으로 Nginx, Prosody, Jicofo, JVB, Jigasi, User/Session Data Store를 주요 구성요소로 두고 Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege 위협을 도출하였다. 각 위협은 DREAD 기준의 Damage, Reproducibility, Exploitability, Affected Users, Discoverability 5개 항목을 10점 척도로 부여하였다. 최종 STRIDE 입력 데이터는 <code>reports/stride_findings.json</code>에 9건으로 정리하였다.</p>
+<p>실험 A에서는 A조의 Microsoft Threat Modeling Tool 기반 STRIDE 결과를 사용하였다. 해당 자료는 Jitsi Meet DFD를 바탕으로 Nginx, Prosody, Jicofo, JVB, Jigasi, User/Session Data Store를 주요 구성요소로 두고 Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege 위협을 도출하였다. 각 위협은 DREAD 기준의 Damage, Reproducibility, Exploitability, Affected Users, Discoverability 5개 항목을 10점 척도로 부여하였다. 최종 STRIDE 입력 데이터는 <code>reports/stride/stride_findings.json</code>에 9건으로 정리하였다.</p>
 <h3>3.3 실험 B: OWASP ZAP 동적 진단</h3>
-<p>실험 B에서는 OWASP ZAP Baseline Scan으로 로컬 웹 인터페이스를 진단하였다. 1차 기준선 결과는 <code>reports/zap-report.json</code>, <code>reports/zap-report.md</code>, <code>reports/zap-report.html</code>로 저장하였다. 이후 CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, Cross-Origin 계열 헤더를 적용한 로컬 서버를 Docker 환경에서 재스캔하고, 결과를 <code>reports/zap-secure-report.json</code>, <code>reports/zap-secure-report.md</code>, <code>reports/zap-secure-report.html</code>로 저장하였다. 본문의 정량 비교는 보안 헤더 적용 후 재스캔 결과를 기준으로 하였다. 수집된 ZAP 경고는 plugin ID, 위험도, confidence, 인스턴스 수를 기준으로 정리하고, OWASP Top 10:2021 카테고리로 매핑하였다. 직접 취약점으로 보기 어려운 정보성 경고는 오탐 후보로 별도 분류하였다.</p>
+<p>실험 B에서는 OWASP ZAP Baseline Scan으로 로컬 웹 인터페이스를 진단하였다. 1차 기준선 결과는 <code>reports/zap/baseline/zap-report.json</code>, <code>reports/zap/baseline/zap-report.md</code>, <code>reports/zap/baseline/zap-report.html</code>로 저장하였다. 이후 CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, Cross-Origin 계열 헤더를 적용한 로컬 서버를 Docker 환경에서 재스캔하고, 결과를 <code>reports/zap/secure/zap-secure-report.json</code>, <code>reports/zap/secure/zap-secure-report.md</code>, <code>reports/zap/secure/zap-secure-report.html</code>로 저장하였다. 본문의 정량 비교는 보안 헤더 적용 후 재스캔 결과를 기준으로 하였다. 수집된 ZAP 경고는 plugin ID, 위험도, confidence, 인스턴스 수를 기준으로 정리하고, OWASP Top 10:2021 카테고리로 매핑하였다. 직접 취약점으로 보기 어려운 정보성 경고는 오탐 후보로 별도 분류하였다.</p>
+<p>추가 실행 증거로 2026년 6월 1일 보안 헤더 적용 서버를 <code>127.0.0.1:18112</code>에서 실행하고 HEAD 요청 응답과 로컬 포트 수신 상태를 확인하였다. 해당 증거는 <code>reports/evidence/execution_evidence_2026-06-01.md</code>에 저장하였으며, CSP, X-Frame-Options, X-Content-Type-Options, Permissions-Policy, Cross-Origin 계열 헤더와 <code>TcpTestSucceeded=True</code> 결과를 포함한다.</p>
 <h3>3.4 비교 지표</h3>
 <p>두 실험 결과는 [표 1]의 지표로 비교하였다.</p>
 <p>[표 1] STRIDE와 OWASP ZAP 비교 지표</p>
@@ -169,7 +181,11 @@ code {
 <td>STRIDE는 설계 위험 우선순위화에 유리</td>
 </tr>
 </tbody></table>
+<p class="caption">[그림 1] OWASP Top 10 탐지 커버리지 비교</p>
+<img src="../reports/figures/owasp_top10_coverage.png" alt="OWASP Top 10 탐지 커버리지 비교">
 <p>보안 헤더 적용 전 1차 ZAP Baseline Scan에서는 경고 13건과 인스턴스 19건이 수집되었다. 보안 헤더가 적용된 서버를 Docker 기반 ZAP으로 재스캔한 결과 경고는 4건, 인스턴스는 8건으로 감소하였다. 이는 ZAP이 STRIDE가 제시한 설계 위협을 대체하지는 못하지만, 보안 헤더와 브라우저 정책 같은 구현 보완의 효과를 반복적으로 검증하는 데 적합함을 보여준다.</p>
+<p class="caption">[그림 2] 보안 헤더 적용 전후 ZAP 경고 변화</p>
+<img src="../reports/figures/zap_alert_reduction.png" alt="보안 헤더 적용 전후 ZAP 경고 변화">
 <p>팀 실습 기준 STRIDE 수동 분석은 DFD 작성, STRIDE 분류, DREAD 점수 산정을 포함해 약 60~90분 범위로 정리하였다. 본 비교 보고서의 분당 지표는 중앙값인 75분을 사용했으며, ZAP Baseline Scan은 Docker 실행 옵션 기준 5분으로 기록하였다.</p>
 <p>[표 3] 실험 A/B 통계 비교표</p>
 <p>[Table 3] Statistical Comparison of Experiment A and Experiment B</p>
@@ -326,6 +342,8 @@ code {
 <td>Unmapped ZAP informational</td>
 </tr>
 </tbody></table>
+<p class="caption">[그림 3] OWASP Top 10 기준 탐지 범위 분포</p>
+<img src="../reports/figures/detection_scope_distribution.png" alt="OWASP Top 10 기준 탐지 범위 분포">
 <p>ZAP 단독 OWASP Top 10 카테고리는 없었으나, OWASP Top 10에 직접 매핑되지 않는 정보성 경고 1건이 존재하였다. 따라서 본 연구에서는 해당 항목을 별도 오탐 후보로 분리하고, ZAP의 단독 Top 10 탐지 범위에는 포함하지 않았다.</p>
 <h3>4.3 오탐 분석</h3>
 <p>ZAP 재스캔 결과에서 A05 Security Misconfiguration에 매핑된 항목은 <code>10055 CSP: Meta Policy Invalid Directive</code>와 <code>10049 Non-Storable Content</code>였다. <code>10055</code>는 HTTP 응답 헤더와 HTML meta 정책이 동시에 존재하거나 일부 CSP 지시어가 브라우저 정책상 충분하지 않을 때 발생하며, 화상회의 화면의 스크립트·프레임 제어와 연결되므로 유효 경고로 판단하였다. <code>10049</code>는 정적 파일 캐시 정책에 따라 영향도가 달라지는 환경 의존 경고로 분류하였다. <code>10109 Modern Web Application</code>은 앱 구조 식별 신호에 가까워 직접 취약점으로 보기 어려우므로 오탐 후보로 분류하였다. 보안 헤더 적용 전에는 <code>10020</code>, <code>10021</code>, <code>10038</code>, <code>10063</code>, <code>90004</code> 등 헤더 누락 경고가 추가로 나타났으나, 재스캔에서는 해당 항목이 PASS로 전환되었다.</p>

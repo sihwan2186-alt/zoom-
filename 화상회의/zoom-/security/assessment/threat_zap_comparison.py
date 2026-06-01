@@ -1007,7 +1007,7 @@ def render_markdown_report(summary: Dict) -> str:
 
 
 def render_visualization(summary: Dict) -> List[str]:
-    """Markdown 보고서에 포함할 Mermaid 기반 그래프를 만든다."""
+    """Markdown 보고서에 포함할 제출용 이미지 링크와 표를 만든다."""
     scope_counts = Counter(row["method_scope"] for row in summary["matrix"])
     unmapped_zap_count = sum(
         1 for row in summary["matrix"]
@@ -1017,35 +1017,46 @@ def render_visualization(summary: Dict) -> List[str]:
         1 for row in summary["matrix"]
         if row["method_scope"] == "ZAP only" and row["category"] != "Unmapped"
     )
-    taxonomy_total = summary["taxonomy_total_categories"]
+    coverage_rows = [
+        ("STRIDE", summary["stride_owasp_coverage"], format_percent(summary["stride_coverage_ratio"])),
+        ("ZAP", summary["zap_owasp_coverage"], format_percent(summary["zap_coverage_ratio"])),
+        ("Combined", summary["combined_owasp_coverage"], format_percent(summary["combined_coverage_ratio"])),
+    ]
+    scope_rows = [
+        ("Both", scope_counts.get("Both", 0)),
+        ("STRIDE only", scope_counts.get("STRIDE only", 0)),
+        ("ZAP only", zap_only_owasp_count),
+        ("Unmapped ZAP informational", unmapped_zap_count),
+        ("None", scope_counts.get("None", 0)),
+    ]
     return [
         "",
         "## 시각화 자료",
         "",
         "### OWASP Top 10 커버리지",
         "",
-        "```mermaid",
-        "xychart-beta",
-        "    title \"OWASP Top 10 탐지 커버리지\"",
-        "    x-axis [\"STRIDE\", \"ZAP\", \"Combined\"]",
-        f"    y-axis \"Categories\" 0 --> {taxonomy_total}",
-        "    bar ["
-        f"{summary['stride_owasp_coverage']}, "
-        f"{summary['zap_owasp_coverage']}, "
-        f"{summary['combined_owasp_coverage']}"
-        "]",
-        "```",
+        "![OWASP Top 10 커버리지](../figures/owasp_top10_coverage.png)",
+        "",
+        "| 구분 | 탐지 카테고리 수 | 커버리지 |",
+        "| --- | ---: | ---: |",
+        *[f"| {name} | {count}/10 | {coverage} |" for name, count, coverage in coverage_rows],
         "",
         "### 탐지 범위 분포",
         "",
-        "```mermaid",
-        "pie title OWASP 카테고리별 탐지 범위",
-        f"    \"Both\" : {scope_counts.get('Both', 0)}",
-        f"    \"STRIDE only\" : {scope_counts.get('STRIDE only', 0)}",
-        f"    \"ZAP only\" : {zap_only_owasp_count}",
-        f"    \"Unmapped ZAP informational\" : {unmapped_zap_count}",
-        f"    \"None\" : {scope_counts.get('None', 0)}",
-        "```",
+        "![탐지 범위 분포](../figures/detection_scope_distribution.png)",
+        "",
+        "| 탐지 범위 | 카테고리 수 |",
+        "| --- | ---: |",
+        *[f"| {name} | {count} |" for name, count in scope_rows],
+        "",
+        "### 보안 헤더 적용 전후 ZAP 경고 변화",
+        "",
+        "![ZAP 경고 변화](../figures/zap_alert_reduction.png)",
+        "",
+        "| 지표 | 적용 전 | 적용 후 |",
+        "| --- | ---: | ---: |",
+        f"| ZAP 경고 수 | 13 | {summary['zap_total']} |",
+        f"| ZAP 인스턴스 수 | 19 | {summary['zap_instance_total']} |",
     ]
 
 

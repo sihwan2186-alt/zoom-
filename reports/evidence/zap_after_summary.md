@@ -1,6 +1,6 @@
 # ZAP 적용 후 요약
 
-입력 파일: `reports/zap-secure-report.json`
+입력 파일: `reports/zap/secure/zap-secure-report.json`
 
 | 항목 | 값 |
 | --- | ---: |

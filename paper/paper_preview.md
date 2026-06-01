@@ -1,5 +1,3 @@
-<!-- Generated from paper_draft.md. Edit paper_draft.md instead. -->
-
 # Comparative Analysis of Vulnerability Detection Effectiveness between STRIDE Threat Modeling and OWASP ZAP in a Video Conferencing Architecture
 
 화상회의 아키텍처 환경에서 STRIDE 위협 모델링과 동적 자동화 진단 도구(OWASP ZAP)의 취약점 탐지 효과성 비교 분석
@@ -40,11 +38,13 @@ WebRTC 보안 연구는 브라우저 기반 실시간 통신에서 중간자 공
 
 ### 3.2 실험 A: STRIDE 위협 모델링
 
-실험 A에서는 A조의 Microsoft Threat Modeling Tool 기반 STRIDE 결과를 사용하였다. 해당 자료는 Jitsi Meet DFD를 바탕으로 Nginx, Prosody, Jicofo, JVB, Jigasi, User/Session Data Store를 주요 구성요소로 두고 Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege 위협을 도출하였다. 각 위협은 DREAD 기준의 Damage, Reproducibility, Exploitability, Affected Users, Discoverability 5개 항목을 10점 척도로 부여하였다. 최종 STRIDE 입력 데이터는 `reports/stride_findings.json`에 9건으로 정리하였다.
+실험 A에서는 A조의 Microsoft Threat Modeling Tool 기반 STRIDE 결과를 사용하였다. 해당 자료는 Jitsi Meet DFD를 바탕으로 Nginx, Prosody, Jicofo, JVB, Jigasi, User/Session Data Store를 주요 구성요소로 두고 Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege 위협을 도출하였다. 각 위협은 DREAD 기준의 Damage, Reproducibility, Exploitability, Affected Users, Discoverability 5개 항목을 10점 척도로 부여하였다. 최종 STRIDE 입력 데이터는 `reports/stride/stride_findings.json`에 9건으로 정리하였다.
 
 ### 3.3 실험 B: OWASP ZAP 동적 진단
 
-실험 B에서는 OWASP ZAP Baseline Scan으로 로컬 웹 인터페이스를 진단하였다. 1차 기준선 결과는 `reports/zap-report.json`, `reports/zap-report.md`, `reports/zap-report.html`로 저장하였다. 이후 CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, Cross-Origin 계열 헤더를 적용한 로컬 서버를 Docker 환경에서 재스캔하고, 결과를 `reports/zap-secure-report.json`, `reports/zap-secure-report.md`, `reports/zap-secure-report.html`로 저장하였다. 본문의 정량 비교는 보안 헤더 적용 후 재스캔 결과를 기준으로 하였다. 수집된 ZAP 경고는 plugin ID, 위험도, confidence, 인스턴스 수를 기준으로 정리하고, OWASP Top 10:2021 카테고리로 매핑하였다. 직접 취약점으로 보기 어려운 정보성 경고는 오탐 후보로 별도 분류하였다.
+실험 B에서는 OWASP ZAP Baseline Scan으로 로컬 웹 인터페이스를 진단하였다. 1차 기준선 결과는 `reports/zap/baseline/zap-report.json`, `reports/zap/baseline/zap-report.md`, `reports/zap/baseline/zap-report.html`로 저장하였다. 이후 CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, Cross-Origin 계열 헤더를 적용한 로컬 서버를 Docker 환경에서 재스캔하고, 결과를 `reports/zap/secure/zap-secure-report.json`, `reports/zap/secure/zap-secure-report.md`, `reports/zap/secure/zap-secure-report.html`로 저장하였다. 본문의 정량 비교는 보안 헤더 적용 후 재스캔 결과를 기준으로 하였다. 수집된 ZAP 경고는 plugin ID, 위험도, confidence, 인스턴스 수를 기준으로 정리하고, OWASP Top 10:2021 카테고리로 매핑하였다. 직접 취약점으로 보기 어려운 정보성 경고는 오탐 후보로 별도 분류하였다.
+
+추가 실행 증거로 2026년 6월 1일 보안 헤더 적용 서버를 `127.0.0.1:18112`에서 실행하고 HEAD 요청 응답과 로컬 포트 수신 상태를 확인하였다. 해당 증거는 `reports/evidence/execution_evidence_2026-06-01.md`에 저장하였으며, CSP, X-Frame-Options, X-Content-Type-Options, Permissions-Policy, Cross-Origin 계열 헤더와 `TcpTestSucceeded=True` 결과를 포함한다.
 
 ### 3.4 비교 지표
 
@@ -79,7 +79,13 @@ WebRTC 보안 연구는 브라우저 기반 실시간 통신에서 중간자 공
 | 오탐 후보 | 0건 | 1건 | `10109 Modern Web Application` |
 | 위험도 점수 | DREAD 합계 347 | 가중 위험 점수 10 | STRIDE는 설계 위험 우선순위화에 유리 |
 
+[그림 1] OWASP Top 10 탐지 커버리지 비교
+![OWASP Top 10 탐지 커버리지 비교](../reports/figures/owasp_top10_coverage.png)
+
 보안 헤더 적용 전 1차 ZAP Baseline Scan에서는 경고 13건과 인스턴스 19건이 수집되었다. 보안 헤더가 적용된 서버를 Docker 기반 ZAP으로 재스캔한 결과 경고는 4건, 인스턴스는 8건으로 감소하였다. 이는 ZAP이 STRIDE가 제시한 설계 위협을 대체하지는 못하지만, 보안 헤더와 브라우저 정책 같은 구현 보완의 효과를 반복적으로 검증하는 데 적합함을 보여준다.
+
+[그림 2] 보안 헤더 적용 전후 ZAP 경고 변화
+![보안 헤더 적용 전후 ZAP 경고 변화](../reports/figures/zap_alert_reduction.png)
 
 팀 실습 기준 STRIDE 수동 분석은 DFD 작성, STRIDE 분류, DREAD 점수 산정을 포함해 약 60~90분 범위로 정리하였다. 본 비교 보고서의 분당 지표는 중앙값인 75분을 사용했으며, ZAP Baseline Scan은 Docker 실행 옵션 기준 5분으로 기록하였다.
 
@@ -116,6 +122,9 @@ WebRTC 보안 연구는 브라우저 기반 실시간 통신에서 중간자 공
 | A09 Security Logging and Monitoring Failures | 1 | 0 | 0 | STRIDE only |
 | A10 Server-Side Request Forgery | 0 | 0 | 0 | None |
 | Unmapped | 0 | 1 | 1 | Unmapped ZAP informational |
+
+[그림 3] OWASP Top 10 기준 탐지 범위 분포
+![OWASP Top 10 기준 탐지 범위 분포](../reports/figures/detection_scope_distribution.png)
 
 ZAP 단독 OWASP Top 10 카테고리는 없었으나, OWASP Top 10에 직접 매핑되지 않는 정보성 경고 1건이 존재하였다. 따라서 본 연구에서는 해당 항목을 별도 오탐 후보로 분리하고, ZAP의 단독 Top 10 탐지 범위에는 포함하지 않았다.
 

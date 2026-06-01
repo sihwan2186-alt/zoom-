@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 from typing import Any, cast
 
 from docx import Document as create_document
@@ -13,12 +14,13 @@ from docx.shared import Inches, Pt
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE_MD = ROOT / "paper_draft.md"
-TEMPLATE = ROOT / "논문 진짜 작성하는 곳_원본백업.docx"
+PAPER_DIR = ROOT / "paper"
+SOURCE_MD = PAPER_DIR / "paper_draft.md"
+TEMPLATE = PAPER_DIR / "paper_template_original.docx"
 if not TEMPLATE.exists():
-    TEMPLATE = ROOT / "논문 진짜 작성하는 곳.docx"
-OUTPUT = ROOT / "논문 진짜 작성하는 곳.docx"
-COPY_OUTPUT = ROOT / "논문_작성본_STRIDE_ZAP.docx"
+    raise FileNotFoundError(f"Template DOCX not found: {TEMPLATE}")
+OUTPUT = PAPER_DIR / "paper_submission_STRIDE_ZAP.docx"
+IMAGE_PATTERN = re.compile(r"!\[(?P<alt>[^\]]*)\]\((?P<path>[^)]+)\)")
 
 
 def set_run_font(run, size: int = 11, bold: bool = False) -> None:
@@ -136,6 +138,14 @@ def add_table(doc: DocxDocument, headers: list[str], rows: list[list[str]]) -> N
     add_paragraph(doc, "", size=9)
 
 
+def add_image(doc: DocxDocument, image_path: Path) -> None:
+    paragraph = doc.add_paragraph()
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = paragraph.add_run()
+    run.add_picture(str(image_path), width=Inches(5.5))
+    paragraph.paragraph_format.space_after = Pt(3)
+
+
 def emit_markdown(doc: DocxDocument, text: str) -> None:
     lines = text.splitlines()
     index = 0
@@ -161,6 +171,16 @@ def emit_markdown(doc: DocxDocument, text: str) -> None:
             add_paragraph(doc, line[4:], size=11, bold=True)
         elif line.startswith("[표 ") or line.startswith("[Table "):
             pending_table_captions.append(line)
+        elif line.startswith("[그림 ") or line.startswith("[Figure "):
+            add_paragraph(doc, line, size=9, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+        elif line.startswith("!["):
+            image_match = IMAGE_PATTERN.fullmatch(line)
+            if image_match:
+                image_path = (SOURCE_MD.parent / image_match.group("path")).resolve()
+                if image_path.exists():
+                    add_image(doc, image_path)
+                else:
+                    add_paragraph(doc, f"[이미지 누락: {image_match.group('path')}]", size=9)
         elif line.startswith("|") and index + 1 < len(lines) and is_markdown_table_separator(lines[index + 1]):
             for caption in pending_table_captions:
                 add_paragraph(doc, caption, size=9, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
@@ -187,7 +207,6 @@ def build() -> None:
     configure_document(doc)
     emit_markdown(doc, SOURCE_MD.read_text(encoding="utf-8"))
     doc.save(str(OUTPUT))
-    doc.save(str(COPY_OUTPUT))
 
 
 if __name__ == "__main__":

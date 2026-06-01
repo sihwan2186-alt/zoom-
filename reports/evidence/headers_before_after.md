@@ -11,7 +11,7 @@ python -m http.server 18101 --bind 127.0.0.1
 curl.exe -s -I http://127.0.0.1:18101/
 ```
 
-결과 원문: [`evidence/response_headers_before.txt`](../evidence/response_headers_before.txt)
+결과 원문: [`response_headers_before.txt`](response_headers_before.txt)
 
 ```text
 HTTP/1.0 200 OK
@@ -29,7 +29,7 @@ python .\secure_static_server.py --host 127.0.0.1 --port 18102
 curl.exe -s -I http://127.0.0.1:18102/
 ```
 
-결과 원문: [`evidence/response_headers_after.txt`](../evidence/response_headers_after.txt)
+결과 원문: [`response_headers_after.txt`](response_headers_after.txt)
 
 ```text
 HTTP/1.0 200 OK

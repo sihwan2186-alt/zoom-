@@ -70,24 +70,34 @@
 
 ### OWASP Top 10 커버리지
 
-```mermaid
-xychart-beta
-    title "OWASP Top 10 탐지 커버리지"
-    x-axis ["STRIDE", "ZAP", "Combined"]
-    y-axis "Categories" 0 --> 10
-    bar [8, 1, 8]
-```
+![OWASP Top 10 커버리지](../figures/owasp_top10_coverage.png)
+
+| 구분 | 탐지 카테고리 수 | 커버리지 |
+| --- | ---: | ---: |
+| STRIDE | 8/10 | 80.0% |
+| ZAP | 1/10 | 10.0% |
+| Combined | 8/10 | 80.0% |
 
 ### 탐지 범위 분포
 
-```mermaid
-pie title OWASP 카테고리별 탐지 범위
-    "Both" : 1
-    "STRIDE only" : 7
-    "ZAP only" : 0
-    "Unmapped ZAP informational" : 1
-    "None" : 2
-```
+![탐지 범위 분포](../figures/detection_scope_distribution.png)
+
+| 탐지 범위 | 카테고리 수 |
+| --- | ---: |
+| Both | 1 |
+| STRIDE only | 7 |
+| ZAP only | 0 |
+| Unmapped ZAP informational | 1 |
+| None | 2 |
+
+### 보안 헤더 적용 전후 ZAP 경고 변화
+
+![ZAP 경고 변화](../figures/zap_alert_reduction.png)
+
+| 지표 | 적용 전 | 적용 후 |
+| --- | ---: | ---: |
+| ZAP 경고 수 | 13 | 4 |
+| ZAP 인스턴스 수 | 19 | 8 |
 
 ## 탐지 범위 매트릭스
 

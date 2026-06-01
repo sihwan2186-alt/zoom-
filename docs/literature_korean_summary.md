@@ -1,7 +1,7 @@
 # 논문 및 영문 보안 자료 한글 요약
 
 - 목적: 영어 논문 제목과 보안 용어를 몰라도 이 프로젝트가 어떤 자료를 근거로 삼았는지 이해할 수 있게 정리한다.
-- 적용 범위: `final_security_report.md`, `README.md`, `threat_zap_comparison.py`, Jitsi Meet 모의공격 실습 문서에서 인용한 논문과 보안 기준
+- 적용 범위: `docs/final_security_report.md`, `README.md`, `threat_zap_comparison.py`, Jitsi Meet 모의공격 실습 문서에서 인용한 논문과 보안 기준
 - 주의: 아래 내용은 논문 전문 번역이 아니라, 실습 보고서에 필요한 핵심 의미와 보안 적용 포인트를 쉬운 한국어로 정리한 것이다.
 
 ## 1. 논문별 쉬운 설명

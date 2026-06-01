@@ -1,6 +1,6 @@
 # ZAP 적용 전 요약
 
-입력 파일: `reports/zap-report.json`
+입력 파일: `reports/zap/baseline/zap-report.json`
 
 | 항목 | 값 |
 | --- | ---: |

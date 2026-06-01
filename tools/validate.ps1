@@ -20,6 +20,7 @@ $SecurityRoot = Join-Path $ZoomRoot "security"
 $AuthJava = Join-Path $SecurityRoot "authentication\AuthModule.java"
 
 $PythonFiles = @(
+    (Join-Path $Root "tools\build_figures.py"),
     (Join-Path $Root "tools\build_paper_docx.py"),
     (Join-Path $Root "tools\build_vsc_paper.py"),
     $SecureServerPy,
@@ -58,6 +59,8 @@ try {
             "--yes",
             "markdownlint-cli2",
             "*.md",
+            "docs/**/*.md",
+            "paper/**/*.md",
             "tools/**/*.md",
             "*/zoom-/**/*.md",
             "#jitsi-meet",
@@ -87,21 +90,20 @@ try {
         $comparisonArgs = @(
             (Join-Path $SecurityRoot "assessment\threat_zap_comparison.py"),
             "--stride-json",
-            ".\reports\stride_findings.json",
+            ".\reports\stride\stride_findings.json",
             "--zap-json",
-            ".\reports\zap-secure-report.json",
+            ".\reports\zap\secure\zap-secure-report.json",
             "--stride-minutes",
             "75",
             "--zap-minutes",
             "5",
             "--output-md",
-            ".\reports\stride_zap_comparison.md",
+            ".\reports\comparison\stride_zap_comparison.md",
             "--output-json",
-            ".\reports\stride_zap_summary.json"
+            ".\reports\comparison\stride_zap_summary.json"
         )
         python @comparisonArgs | Out-Null
-        Copy-Item ".\reports\stride_zap_comparison.md" ".\reports\stride_zap_secure_comparison.md" -Force
-        Copy-Item ".\reports\stride_zap_summary.json" ".\reports\stride_zap_secure_summary.json" -Force
+        python ".\tools\build_figures.py"
     }
 
     if (-not $SkipPaperBuild) {

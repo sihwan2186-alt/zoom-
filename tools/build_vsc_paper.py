@@ -6,10 +6,10 @@ import re
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "paper_draft.md"
-MARKDOWN_OUTPUT = ROOT / "논문_작성본_VSC.md"
-HTML_OUTPUT = ROOT / "논문_작성본_VSC.html"
-GENERATED_NOTICE = "<!-- Generated from paper_draft.md. Edit paper_draft.md instead. -->\n\n"
+PAPER_DIR = ROOT / "paper"
+SOURCE = PAPER_DIR / "paper_draft.md"
+MARKDOWN_OUTPUT = PAPER_DIR / "paper_preview.md"
+HTML_OUTPUT = PAPER_DIR / "paper_preview.html"
 
 
 STYLE = """
@@ -40,6 +40,12 @@ h3 {
 p {
   margin: 0.65rem 0;
 }
+.caption {
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin: 0.9rem 0 0.25rem;
+  text-align: center;
+}
 table {
   border-collapse: collapse;
   font-size: 0.92rem;
@@ -55,6 +61,13 @@ th {
   background: #eef5fb;
   font-weight: 700;
   text-align: center;
+}
+img {
+  border: 1px solid #d9e2ec;
+  display: block;
+  margin: 0.8rem auto 1.2rem;
+  max-width: 760px;
+  width: 100%;
 }
 code {
   background: #f0f4f8;
@@ -78,6 +91,14 @@ def is_table_separator(line: str) -> bool:
 
 def split_table_row(line: str) -> list[str]:
     return [cell.strip() for cell in line.strip().strip("|").split("|")]
+
+
+def render_image(line: str) -> str | None:
+    match = re.fullmatch(r"!\[([^\]]*)\]\(([^)]+)\)", line.strip())
+    if not match:
+        return None
+    alt_text, source = match.groups()
+    return f'<img src="{escape(source)}" alt="{escape(alt_text)}">'
 
 
 def render_table(lines: list[str], start: int) -> tuple[str, int]:
@@ -118,6 +139,15 @@ def markdown_to_html(markdown: str) -> str:
             table_html, index = render_table(lines, index)
             html.append(table_html)
             continue
+        image_html = render_image(stripped)
+        if image_html is not None:
+            html.append(image_html)
+            index += 1
+            continue
+        if stripped.startswith("[그림 ") or stripped.startswith("[Figure "):
+            html.append(f'<p class="caption">{inline_markup(stripped)}</p>')
+            index += 1
+            continue
         if stripped.startswith("# "):
             html.append(f"<h1>{inline_markup(stripped[2:])}</h1>")
         elif stripped.startswith("## "):
@@ -140,16 +170,15 @@ def markdown_to_html(markdown: str) -> str:
 
 def build() -> None:
     markdown = SOURCE.read_text(encoding="utf-8")
-    MARKDOWN_OUTPUT.write_text(GENERATED_NOTICE + markdown, encoding="utf-8")
+    MARKDOWN_OUTPUT.write_text(markdown, encoding="utf-8")
     body = markdown_to_html(markdown)
     html = (
         "<!doctype html>\n"
         "<html lang=\"ko\">\n"
-        f"{GENERATED_NOTICE}"
         "<head>\n"
         "  <meta charset=\"utf-8\">\n"
         "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
-        "  <title>논문 작성본 VSC</title>\n"
+        "  <title>STRIDE-ZAP 논문 미리보기</title>\n"
         f"  <style>{STYLE}</style>\n"
         "</head>\n"
         "<body>\n"
