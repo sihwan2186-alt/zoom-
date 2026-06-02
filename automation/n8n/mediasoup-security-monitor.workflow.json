@@ -1,0 +1,223 @@
+{
+  "name": "Mediasoup Security Event Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mediasoup-security-alert",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "c3c88ad0-0c3b-4a84-93f3-ccf3f3d7f6e6",
+      "name": "Receive Security Event",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        0
+      ],
+      "webhookId": "mediasoup-security-alert"
+    },
+    {
+      "parameters": {
+        "jsCode": "const WEBHOOK_SHARED_TOKEN = 'change-me-before-demo';\nconst request = $json;\nconst body = request.body ?? request;\nconst headers = request.headers ?? {};\n\nfunction headerValue(name) {\n  const target = name.toLowerCase();\n  for (const [key, value] of Object.entries(headers)) {\n    if (String(key).toLowerCase() === target) {\n      return Array.isArray(value) ? value[0] : value;\n    }\n  }\n  return undefined;\n}\n\nfunction normalizeString(value, maxLength = 128) {\n  if (value === undefined || value === null) {\n    return null;\n  }\n  return String(value).slice(0, maxLength);\n}\n\nfunction boundedNumber(value, max = 10000) {\n  const number = Number(value);\n  if (!Number.isFinite(number) || number < 0) {\n    return 0;\n  }\n  return Math.min(number, max);\n}\n\nfunction safeEqual(a, b) {\n  const left = String(a ?? '');\n  const right = String(b ?? '');\n  if (left.length !== right.length) {\n    return false;\n  }\n  let diff = 0;\n  for (let index = 0; index < left.length; index += 1) {\n    diff |= left.charCodeAt(index) ^ right.charCodeAt(index);\n  }\n  return diff === 0;\n}\n\nconst providedToken = normalizeString(headerValue('x-video-security-token'), 256);\nif (!safeEqual(providedToken, WEBHOOK_SHARED_TOKEN)) {\n  return [{\n    json: {\n      receivedAt: new Date().toISOString(),\n      security: {\n        authorized: false,\n        reason: 'Invalid or missing X-Video-Security-Token header'\n      },\n      source: normalizeString(body.source ?? 'unknown'),\n      eventType: normalizeString(body.eventType ?? 'unknown'),\n      risk: {\n        severity: 'critical',\n        score: 0,\n        reasons: ['Webhook authentication failed'],\n        action: 'reject: invalid webhook token'\n      }\n    }\n  }];\n}\n\nconst allowedSeverities = new Set(['critical', 'high', 'medium', 'low', 'informational']);\nconst severityWeight = { critical: 90, high: 70, medium: 45, low: 20, informational: 5 };\nconst rawSeverity = String(body.severity ?? 'informational').toLowerCase();\nconst severity = allowedSeverities.has(rawSeverity) ? rawSeverity : 'informational';\nconst rawSignals = body.signals ?? {};\nconst event = {\n  source: normalizeString(body.source ?? 'unknown'),\n  eventType: normalizeString(body.eventType ?? 'unknown'),\n  roomId: normalizeString(body.roomId),\n  participantId: normalizeString(body.participantId),\n  timestamp: normalizeString(body.timestamp, 64),\n  evidence: {\n    zapReport: normalizeString(body.evidence?.zapReport, 256),\n    strideReport: normalizeString(body.evidence?.strideReport, 256)\n  },\n  signals: {\n    iceFailed: boundedNumber(rawSignals.iceFailed),\n    dtlsFailed: boundedNumber(rawSignals.dtlsFailed),\n    producerCount: boundedNumber(rawSignals.producerCount),\n    consumerCount: boundedNumber(rawSignals.consumerCount),\n    zapAlerts: boundedNumber(rawSignals.zapAlerts),\n    publicIpCandidateObserved: rawSignals.publicIpCandidateObserved === true,\n    unauthorizedJoinAttempts: boundedNumber(rawSignals.unauthorizedJoinAttempts)\n  }\n};\n\nlet score = severityWeight[severity] ?? 5;\nconst reasons = [];\nfunction add(condition, points, reason) {\n  if (condition) {\n    score += points;\n    reasons.push(reason);\n  }\n}\n\nconst timestampMs = Date.parse(event.timestamp ?? '');\nadd(event.timestamp !== null && Number.isNaN(timestampMs), 5, 'Invalid event timestamp');\nadd(Number.isFinite(timestampMs) && Math.abs(Date.now() - timestampMs) > 10 * 60 * 1000, 5, 'Event timestamp is outside the 10 minute freshness window');\nadd(event.signals.iceFailed >= 3, 10, 'ICE failure spike');\nadd(event.signals.dtlsFailed >= 1, 10, 'DTLS failure observed');\nadd(event.signals.producerCount >= 10, 8, 'Unexpected producer count');\nadd(event.signals.consumerCount >= 80, 8, 'Unexpected consumer fanout');\nadd(event.signals.zapAlerts >= 4, 6, 'ZAP alerts present');\nadd(event.signals.publicIpCandidateObserved === true, 8, 'Public IP candidate observed');\nadd(event.signals.unauthorizedJoinAttempts >= 2, 10, 'Repeated unauthorized join attempts');\n\nscore = Math.min(score, 100);\nconst action = score >= 80\n  ? 'contain: lock room, require moderator review, preserve evidence, notify security owner'\n  : score >= 60\n    ? 'investigate: notify moderator and create follow-up ticket'\n    : 'monitor: keep event in audit log';\n\nreturn [{\n  json: {\n    receivedAt: new Date().toISOString(),\n    security: {\n      authorized: true,\n      tokenChecked: true\n    },\n    event,\n    risk: {\n      severity,\n      score,\n      reasons,\n      action\n    }\n  }\n}];"
+      },
+      "id": "af0a0cbf-02d2-448c-818b-60d437c0fdf6",
+      "name": "Score Alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4b239f56-d552-4629-b9e5-18e8376e3f20",
+              "leftValue": "={{ $json.risk.score }}",
+              "rightValue": 60,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7d61297c-3b93-404d-8d9f-889296a28fd5",
+      "name": "Needs Action?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'action-required', result: $json }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "5b8d913d-79ae-4d83-bf3f-ec4d420095fa",
+      "name": "Respond Action Required",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        540,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'logged', result: $json }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "e6112af5-7a88-431d-a331-bd052f846cdf",
+      "name": "Respond Logged",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        540,
+        20
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0b8b8f84-b775-4754-a55d-4e3f63843c8c",
+              "leftValue": "={{ $json.security.authorized }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a33a76d8-bf60-4a03-a127-58de17e69a37",
+      "name": "Authorized?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -20,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'rejected', reason: $json.security.reason }) }}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "c79f273c-a9a7-4e79-a3ee-3079217f879f",
+      "name": "Respond Unauthorized",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        260,
+        220
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Receive Security Event": {
+      "main": [
+        [
+          {
+            "node": "Score Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score Alert": {
+      "main": [
+        [
+          {
+            "node": "Authorized?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authorized?": {
+      "main": [
+        [
+          {
+            "node": "Needs Action?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Unauthorized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Action?": {
+      "main": [
+        [
+          {
+            "node": "Respond Action Required",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Logged",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f698ef3e-9649-4e60-88e8-2b9b61cf534c",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}

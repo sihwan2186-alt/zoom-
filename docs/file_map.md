@@ -21,6 +21,7 @@
 | `docs/literature_korean_summary.md` | 참고 논문과 보안 용어 한글 해설 |
 | `docs/limitations.md` | 연구 한계 |
 | `docs/jitsi_meet_security_lab.md` | Jitsi Meet 실습 확장 가이드 |
+| `docs/mediasoup_n8n_security_extension.md` | Mediasoup 기반 확장 주제와 n8n 보안 자동화 도입 검토 |
 
 ## 실험 결과
 
@@ -30,8 +31,20 @@
 | `reports/zap/baseline/` | 보안 헤더 적용 전 ZAP 결과 |
 | `reports/zap/secure/` | 보안 헤더 적용 후 ZAP 재스캔 결과 |
 | `reports/comparison/` | STRIDE-ZAP 비교 보고서와 JSON 요약 |
+| `reports/extension/` | Mediasoup-n8n 확장 보안 수준 요약 |
 | `reports/figures/` | 논문 삽입용 그래프 이미지 |
 | `reports/evidence/` | 응답 헤더, 포트 확인, ZAP 요약 증거 |
+
+## 보안 자동화 데모
+
+| 파일 | 역할 |
+| --- | --- |
+| `automation/n8n/README.md` | n8n 실행, import, 테스트 절차 |
+| `automation/n8n/docker-compose.yml` | 로컬 n8n 실행용 hardened compose |
+| `automation/n8n/mediasoup-security-monitor.workflow.json` | n8n import용 보안 이벤트 Webhook workflow |
+| `automation/n8n/sample-alert.json` | Mediasoup/ZAP 보안 이벤트 예시 payload |
+| `automation/n8n/security-review.md` | n8n 실행 기준 보안 요소와 남은 취약점 정리 |
+| `automation/n8n/simulate_security_monitor.py` | Docker 없이 workflow 위험도 판정 로직을 재현하는 검증 스크립트 |
 
 ## 참고 자료와 코드
 

@@ -1,7 +1,7 @@
 # 연구 진행 현황 체크리스트
 
 - 연구 제목: 화상회의 아키텍처 환경에서 STRIDE 위협 모델링과 동적 자동화 진단 도구(OWASP ZAP)의 취약점 탐지 효과성 비교 분석
-- 점검일: 2026-06-01
+- 점검일: 2026-06-02
 - 기준 산출물: `docs/final_security_report.md`, `reports/comparison/stride_zap_comparison.md`, `reports/comparison/stride_zap_summary.json`, `reports/stride/stride_findings.json`, `reports/zap/secure/zap-secure-report.json`
 
 ## 1. 전체 진행 요약
@@ -16,6 +16,7 @@
 | 오탐 분석 | 완료 | `reports/comparison/stride_zap_comparison.md`의 ZAP 경고별 오탐 검토, `reports/evidence/execution_evidence_2026-06-01.md` | 응답 헤더와 포트 확인 증거 추가 완료 |
 | 시각화 자료 | 완료 | `reports/figures/*.png`, 탐지 범위 매트릭스 | 제출용 PNG 이미지와 표 형태로 정리 완료 |
 | 논문 초안 | 완료 | `paper/paper_draft.md`, `paper/paper_submission_STRIDE_ZAP.docx` | 저자명/소속만 실제 정보로 교체 필요 |
+| Mediasoup-n8n 확장 | 보완 완료 | `docs/mediasoup_n8n_security_extension.md`, `automation/n8n/`, `reports/extension/mediasoup_n8n_security_summary.json` | 운영 환경 적용 시 HMAC 서명, replay 방지, reverse proxy rate limit 추가 필요 |
 
 ## 2. 6주 계획 대비 진행률
 
@@ -27,6 +28,7 @@
 | 4주차 | OWASP Top 10 매핑, 오탐 분석, 시각화 | 완료 | `reports/comparison/stride_zap_comparison.md`, `reports/figures/*.png` |
 | 5주차 | 논문 초안 작성 | 완료 | `paper/paper_draft.md` |
 | 6주차 | 수정 및 제출 준비 | 대부분 완료 | `paper/paper_submission_STRIDE_ZAP.docx` 양식 반영 완료, 저자 정보 최종 입력 필요 |
+| 확장 작업 | Mediasoup-n8n 보안 자동화 검토 | 완료 | `automation/n8n/security-review.md`, `automation/n8n/simulate_security_monitor.py` |
 
 ## 3. 현재 정량 결과
 
@@ -47,6 +49,7 @@
 | 2 | 그래프를 제출용 이미지로 정리 | 완료: `reports/figures/owasp_top10_coverage.png`, `reports/figures/detection_scope_distribution.png`, `reports/figures/zap_alert_reduction.png` |
 | 3 | Nmap 또는 응답 헤더 원문 1회 저장 | 완료: `reports/evidence/execution_evidence_2026-06-01.md` |
 | 4 | STRIDE 분석 시간 입력 | 탐지 소요 시간 비교 지표 완성 |
+| 5 | n8n Webhook 인증과 보안 리뷰 정리 | 완료: token header 검사, 401 분기, 응답 최소화, `security-review.md` 추가 |
 
 ## 5. 현재 한계 문장
 

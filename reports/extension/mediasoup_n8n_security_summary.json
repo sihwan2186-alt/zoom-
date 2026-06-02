@@ -1,0 +1,67 @@
+{
+  "generated_at": "2026-06-02",
+  "topic": "Mediasoup-n8n security automation extension",
+  "assessment": {
+    "mediasoup": {
+      "fit_for_research": "high",
+      "security_level": "media transport baseline high, application security implementation-dependent",
+      "key_points": [
+        "SFU media server for WebRTC conferencing",
+        "Supports WebRTC and plain RTP input/output",
+        "Signaling agnostic, so authentication and authorization are application responsibilities",
+        "WebRTC transport uses ICE and DTLS procedures; SRTP parameters are supported for relevant transports"
+      ],
+      "primary_risks": [
+        "Weak room authorization in custom signaling",
+        "Moderator role confusion",
+        "ICE candidate privacy leakage",
+        "Insufficient audit logging",
+        "No application-level E2EE unless separately implemented"
+      ]
+    },
+    "n8n": {
+      "fit_for_security_automation": "high with hardening",
+      "security_level": "automation maturity high, self-hosted attack surface medium-high",
+      "recommended_min_version": "2.22.6 or later as of 2026-06-02",
+      "primary_risks": [
+        "Workflow editor privilege misuse",
+        "Code/Python sandbox escape",
+        "Git node file read or RCE paths",
+        "HTTP Request/XML/Form node vulnerabilities",
+        "Public webhook abuse"
+      ]
+    }
+  },
+  "workflow_files": [
+    "automation/n8n/docker-compose.yml",
+    "automation/n8n/.env.example",
+    "automation/n8n/mediasoup-security-monitor.workflow.json",
+    "automation/n8n/sample-alert.json",
+    "automation/n8n/README.md"
+  ],
+  "recommended_controls": [
+    "Pin n8n version and update promptly",
+    "Bind n8n to localhost or internal network",
+    "Use TLS reverse proxy for any external access",
+    "Disable community nodes unless explicitly reviewed",
+    "Restrict workflow creation and editing to trusted users",
+    "Exclude high-risk nodes when not needed",
+    "Set N8N_ENCRYPTION_KEY and protect stored credentials",
+    "Prune execution data and avoid storing sensitive payloads",
+    "Treat n8n itself as a monitored high-risk automation asset"
+  ],
+  "implemented_workflow_controls": [
+    "X-Video-Security-Token header check",
+    "401 rejected response for missing or invalid webhook token",
+    "Input length and numeric bound normalization",
+    "No raw request body reflection in webhook response",
+    "Risk scoring for ICE, DTLS, producer, consumer, ZAP, IP candidate, and unauthorized join signals"
+  ],
+  "remaining_workflow_risks": [
+    "Default demo token must be changed after import",
+    "Shared token does not prove payload integrity",
+    "Replay protection is limited to timestamp freshness scoring",
+    "Reverse proxy TLS and rate limiting are still required for any non-local exposure",
+    "Workflow editor permissions remain a high-impact trust boundary"
+  ]
+}

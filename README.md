@@ -10,6 +10,8 @@
 | 논문 초안 원본 | `paper/paper_draft.md` |
 | 브라우저 미리보기 | `paper/paper_preview.html` |
 | 최종 연구 요약 | `docs/final_security_report.md` |
+| Mediasoup-n8n 확장 검토 | `docs/mediasoup_n8n_security_extension.md` |
+| n8n 보안 자동화 데모 | `automation/n8n/README.md` |
 | 진행 현황 | `docs/research_progress_status.md` |
 | 비교 결과 보고서 | `reports/comparison/stride_zap_comparison.md` |
 | 실행 증거 | `reports/evidence/execution_evidence_2026-06-01.md` |
@@ -21,8 +23,10 @@
 ├─ README.md
 ├─ paper/                 # 논문 원본, 미리보기, 제출용 DOCX
 ├─ docs/                  # 연구 설명, 진행 현황, 한계, 실습 가이드
+├─ automation/n8n/        # Mediasoup/Jitsi 보안 이벤트 n8n 자동화 데모
 ├─ reports/
 │  ├─ comparison/         # STRIDE-ZAP 정량 비교 결과
+│  ├─ extension/          # Mediasoup-n8n 확장 요약 데이터
 │  ├─ figures/            # 논문 삽입용 그래프 PNG
 │  ├─ stride/             # STRIDE 입력 데이터
 │  ├─ zap/                # ZAP 기준선/보안헤더 적용 후 보고서
@@ -55,6 +59,8 @@
 | ZAP 보안 헤더 적용 후 보고서 | `reports/zap/secure/zap-secure-report.*` |
 | 비교 보고서 | `reports/comparison/stride_zap_comparison.md` |
 | 비교 원본 데이터 | `reports/comparison/stride_zap_summary.json` |
+| Mediasoup-n8n 확장 데이터 | `reports/extension/mediasoup_n8n_security_summary.json` |
+| n8n 워크플로 | `automation/n8n/mediasoup-security-monitor.workflow.json` |
 | 논문 그래프 | `reports/figures/*.png` |
 | 응답 헤더 증거 | `reports/evidence/*.txt`, `reports/evidence/*.md` |
 
@@ -109,6 +115,16 @@ docker run --rm -v "${reportDir}:/zap/wrk/:rw" -t ghcr.io/zaproxy/zaproxy:stable
 ```powershell
 .\tools\validate.ps1
 ```
+
+## n8n 보안 자동화 데모
+
+Mediasoup/Jitsi/자체 WebRTC 서비스에서 발생한 보안 이벤트를 n8n Webhook으로 받아 위험도를 계산하는 데모를 포함한다.
+
+```powershell
+python .\automation\n8n\simulate_security_monitor.py
+```
+
+실제 n8n 실행 절차는 `automation/n8n/README.md`에 정리되어 있다. workflow는 `X-Video-Security-Token` 헤더를 검사하고, 인증 실패 요청은 `401 rejected`로 분리한다.
 
 ## 문서 수정 규칙
 

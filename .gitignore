@@ -21,6 +21,8 @@ reports/*
 !reports/comparison/
 !reports/comparison/stride_zap_comparison.md
 !reports/comparison/stride_zap_summary.json
+!reports/extension/
+!reports/extension/*.json
 !reports/evidence/
 !reports/evidence/*.md
 !reports/evidence/*.txt
