@@ -1,4 +1,5 @@
 .tmp_classes/
+.tmp_jitsi_lab/
 .tmp_docx_render*/
 .tmp_pdf/
 .tmp_pdf_text/
@@ -21,8 +22,6 @@ reports/*
 !reports/comparison/
 !reports/comparison/stride_zap_comparison.md
 !reports/comparison/stride_zap_summary.json
-!reports/extension/
-!reports/extension/*.json
 !reports/evidence/
 !reports/evidence/*.md
 !reports/evidence/*.txt
