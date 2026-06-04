@@ -6,15 +6,15 @@ Kim Geun Hyeong1, Kim Si Hwan2, Kim Su Chang3, Jeong Jin Hyeok4, Lee Taek5
 
 김근형1, 김시환2, 김수창3, 정진혁4, 이택5
 
-1 Student, Division of Computer Science and Engineering, Sun Moon University, Korea, `dko07160@sunmoon.ac.kr`
+1 Student, Division of Computer Science and Engineering, Sun Moon University, Korea, dko07160@sunmoon.ac.kr
 
-2 Student, Division of Computer Science and Engineering, Sun Moon University, Korea, `hwan0212@sunmoon.ac.kr`
+2 Student, Division of Computer Science and Engineering, Sun Moon University, Korea, hwan0212@sunmoon.ac.kr
 
-3 Student, Division of Computer Science and Engineering, Sun Moon University, Korea, `alehwmxjfb@sunmoon.ac.kr`
+3 Student, Division of Computer Science and Engineering, Sun Moon University, Korea, alehwmxjfb@sunmoon.ac.kr
 
-4 Student, Division of Computer Science and Engineering, Sun Moon University, Korea, `jinhyeok0421@sunmoon.kr`
+4 Student, Division of Computer Science and Engineering, Sun Moon University, Korea, jinhyeok0421@sunmoon.kr
 
-5 Professor, Division of Computer Science and Engineering, Sun Moon University, Korea, `Comtaek@gmail.com`
+5 Professor, Division of Computer Science and Engineering, Sun Moon University, Korea, Comtaek@gmail.com
 
 ## 초록
 
@@ -90,11 +90,13 @@ WebRTC 보안 연구는 브라우저 기반 실시간 통신에서 중간자 공
 | 위험도 점수 | DREAD 합계 347 | 가중 위험 점수 10 | STRIDE는 설계 위험 우선순위화에 유리 |
 
 [그림 1] OWASP Top 10 탐지 커버리지 비교
+[Figure 1] Comparison of OWASP Top 10 Detection Coverage
 ![OWASP Top 10 탐지 커버리지 비교](../reports/figures/owasp_top10_coverage.png)
 
 보안 헤더 적용 전 1차 ZAP Baseline Scan에서는 경고 13건과 인스턴스 19건이 수집되었다. 보안 헤더가 적용된 서버를 Docker 기반 ZAP으로 재스캔한 결과 경고는 4건, 인스턴스는 8건으로 감소하였다. 이는 ZAP이 STRIDE가 제시한 설계 위협을 대체하지는 못하지만, 보안 헤더와 브라우저 정책 같은 구현 보완의 효과를 반복적으로 검증하는 데 적합함을 보여준다.
 
 [그림 2] 보안 헤더 적용 전후 ZAP 경고 변화
+[Figure 2] Changes in ZAP Alerts Before and After Security Header Application
 ![보안 헤더 적용 전후 ZAP 경고 변화](../reports/figures/zap_alert_reduction.png)
 
 팀 실습 기준 STRIDE 수동 분석은 DFD 작성, STRIDE 분류, DREAD 점수 산정을 포함해 약 60~90분 범위로 정리하였다. 본 비교 보고서의 분당 지표는 중앙값인 75분을 사용했으며, ZAP Baseline Scan은 Docker 실행 옵션 기준 5분으로 기록하였다.
@@ -134,6 +136,7 @@ WebRTC 보안 연구는 브라우저 기반 실시간 통신에서 중간자 공
 | Unmapped | 0 | 1 | 1 | Unmapped ZAP informational |
 
 [그림 3] OWASP Top 10 기준 탐지 범위 분포
+[Figure 3] Detection Scope Distribution Based on OWASP Top 10
 ![OWASP Top 10 기준 탐지 범위 분포](../reports/figures/detection_scope_distribution.png)
 
 ZAP 단독 OWASP Top 10 카테고리는 없었으나, OWASP Top 10에 직접 매핑되지 않는 정보성 경고 1건이 존재하였다. 따라서 본 연구에서는 해당 항목을 별도 오탐 후보로 분리하고, ZAP의 단독 Top 10 탐지 범위에는 포함하지 않았다.
@@ -188,13 +191,13 @@ STRIDE는 화상회의 아키텍처의 신뢰 경계와 데이터 흐름을 기�
 
 ## References
 
-[1] B. Feher, L. Sidi, A. Shabtai, and R. Puzis, The Security of WebRTC, arXiv:1601.00184, (2016). Available from: <https://arxiv.org/abs/1601.00184>
+[1] B. Feher, L. Sidi, A. Shabtai, R. Puzis, and L. Marozas, "WebRTC security measures and weaknesses," International Journal of Internet Technology and Secured Transactions, vol. 8, no. 1, pp. 78-102, 2018. Available from: <https://doi.org/10.1504/IJITST.2018.092138>
 
-[2] N. M. Al-Fannah, One Leak Will Sink A Ship: WebRTC IP Address Leaks, arXiv:1709.05395, (2017). Available from: <https://arxiv.org/abs/1709.05395>
+[2] N. M. Al-Fannah, "One leak will sink a ship: WebRTC IP address leaks," 2017 International Carnahan Conference on Security Technology (ICCST), pp. 1-5, 2017. Available from: <https://doi.org/10.1109/CCST.2017.8167801>
 
-[3] D. Kagan, G. F. Alpert, and M. Fire, Zooming Into Video Conferencing Privacy and Security Threats, arXiv:2007.01059, (2020). Available from: <https://arxiv.org/abs/2007.01059>
+[3] D. Kagan, G. F. Alpert, and M. Fire, "Zooming Into Video Conferencing Privacy," IEEE Transactions on Computational Social Systems, vol. 11, no. 1, pp. 933-944, 2024. Available from: <https://doi.org/10.1109/TCSS.2022.3231987>
 
-[4] S. Tang, E. Alowaisheq, X. Mi, Y. Chen, X. Wang, and Y. Dou, Stealthy Peers: Understanding Security Risks of WebRTC-Based Peer-Assisted Video Streaming, arXiv:2212.02740, (2022). Available from: <https://arxiv.org/abs/2212.02740>
+[4] S. Tang, E. Alowaisheq, X. Mi, Y. Chen, X. Wang, and Y. Dou, "Stealthy Peers: Understanding Security and Privacy Risks of Peer-Assisted Video Streaming," Proceedings - 2024 54th Annual IEEE/IFIP International Conference on Dependable Systems and Networks (DSN), pp. 324-337, 2024. Available from: <https://doi.org/10.1109/DSN58291.2024.00041>
 
 [5] OWASP Foundation, OWASP Top 10:2021, (2021). Available from: <https://owasp.org/Top10/>
 

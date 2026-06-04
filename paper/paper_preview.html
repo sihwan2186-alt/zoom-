@@ -71,11 +71,11 @@ code {
 <p>화상회의 아키텍처 환경에서 STRIDE 위협 모델링과 동적 자동화 진단 도구(OWASP ZAP)의 취약점 탐지 효과성 비교 분석</p>
 <p>Kim Geun Hyeong1, Kim Si Hwan2, Kim Su Chang3, Jeong Jin Hyeok4, Lee Taek5</p>
 <p>김근형1, 김시환2, 김수창3, 정진혁4, 이택5</p>
-<p>1 Student, Division of Computer Science and Engineering, Sun Moon University, Korea, <code>dko07160@sunmoon.ac.kr</code></p>
-<p>2 Student, Division of Computer Science and Engineering, Sun Moon University, Korea, <code>hwan0212@sunmoon.ac.kr</code></p>
-<p>3 Student, Division of Computer Science and Engineering, Sun Moon University, Korea, <code>alehwmxjfb@sunmoon.ac.kr</code></p>
-<p>4 Student, Division of Computer Science and Engineering, Sun Moon University, Korea, <code>jinhyeok0421@sunmoon.kr</code></p>
-<p>5 Professor, Division of Computer Science and Engineering, Sun Moon University, Korea, <code>Comtaek@gmail.com</code></p>
+<p>1 Student, Division of Computer Science and Engineering, Sun Moon University, Korea, dko07160@sunmoon.ac.kr</p>
+<p>2 Student, Division of Computer Science and Engineering, Sun Moon University, Korea, hwan0212@sunmoon.ac.kr</p>
+<p>3 Student, Division of Computer Science and Engineering, Sun Moon University, Korea, alehwmxjfb@sunmoon.ac.kr</p>
+<p>4 Student, Division of Computer Science and Engineering, Sun Moon University, Korea, jinhyeok0421@sunmoon.kr</p>
+<p>5 Professor, Division of Computer Science and Engineering, Sun Moon University, Korea, Comtaek@gmail.com</p>
 <h2>초록</h2>
 <p>비대면 협업 환경의 확산으로 화상회의 시스템은 인증, 세션, 미디어 스트리밍, 녹화 저장소, 외부 연동 기능을 함께 포함하는 복합 웹 서비스가 되었다. 이러한 시스템은 일반 웹 애플리케이션 취약점뿐 아니라 회의방 권한, WebRTC 미디어 경로, ICE 후보를 통한 IP 노출, 그룹 키 갱신과 같은 구조적 위협을 함께 가진다. 본 연구는 화상회의 아키텍처를 대상으로 설계 기반 STRIDE 위협 모델링과 동적 자동화 진단 도구인 OWASP ZAP의 취약점 탐지 효과성을 비교하였다. 실험 A에서는 A조가 Microsoft Threat Modeling Tool 기반으로 정리한 STRIDE 위협 9건과 DREAD 점수를 입력 데이터로 사용하였다. 실험 B에서는 보안 헤더가 적용된 동일 웹 인터페이스를 Docker 기반 OWASP ZAP Baseline Scan으로 재진단하여 경고 4건, 인스턴스 8건을 수집하였다. 두 결과는 OWASP Top 10:2021 기준으로 매핑하였다. 분석 결과 STRIDE는 8개 카테고리(80.0%)를 포괄했으며, ZAP은 주로 A05 Security Misconfiguration 1개 카테고리(10.0%)에 집중되었다. 공통 탐지 영역은 A05였고, STRIDE는 A01, A02, A03, A04, A07, A08, A09에서 단독 탐지 효과를 보였다. ZAP 결과 중 직접 취약점으로 보기 어려운 정보성 경고는 1건으로 분류하였다. 또한 보안 헤더 적용 전 1차 ZAP 결과(13건, 19개 인스턴스)와 비교하면 경고 수가 감소하여, 자동화 진단이 구현 보완 효과를 반복적으로 확인하는 데 유용함을 보였다.</p>
 <p>두 실험의 장단점과 표현 가능 범위도 함께 비교하여, 실험 A안은 설계·구조 위험 설명에, 실험 B안은 실제 구현 상태 검증에 강점이 있음을 정리하였다. 추가 보조 검증에서는 Docker 기반 Jitsi Meet self-hosted 환경에서 인증, JWT, ICE 후보, Nmap, Jibri 기동 상태를 확인하여 정량 비교 결과의 운영 해석 범위를 보완하였다.</p>
@@ -187,9 +187,11 @@ code {
 </tr>
 </tbody></table>
 <p class="caption">[그림 1] OWASP Top 10 탐지 커버리지 비교</p>
+<p class="caption">[Figure 1] Comparison of OWASP Top 10 Detection Coverage</p>
 <img src="../reports/figures/owasp_top10_coverage.png" alt="OWASP Top 10 탐지 커버리지 비교">
 <p>보안 헤더 적용 전 1차 ZAP Baseline Scan에서는 경고 13건과 인스턴스 19건이 수집되었다. 보안 헤더가 적용된 서버를 Docker 기반 ZAP으로 재스캔한 결과 경고는 4건, 인스턴스는 8건으로 감소하였다. 이는 ZAP이 STRIDE가 제시한 설계 위협을 대체하지는 못하지만, 보안 헤더와 브라우저 정책 같은 구현 보완의 효과를 반복적으로 검증하는 데 적합함을 보여준다.</p>
 <p class="caption">[그림 2] 보안 헤더 적용 전후 ZAP 경고 변화</p>
+<p class="caption">[Figure 2] Changes in ZAP Alerts Before and After Security Header Application</p>
 <img src="../reports/figures/zap_alert_reduction.png" alt="보안 헤더 적용 전후 ZAP 경고 변화">
 <p>팀 실습 기준 STRIDE 수동 분석은 DFD 작성, STRIDE 분류, DREAD 점수 산정을 포함해 약 60~90분 범위로 정리하였다. 본 비교 보고서의 분당 지표는 중앙값인 75분을 사용했으며, ZAP Baseline Scan은 Docker 실행 옵션 기준 5분으로 기록하였다.</p>
 <p>[표 3] 실험 A/B 통계 비교표</p>
@@ -348,6 +350,7 @@ code {
 </tr>
 </tbody></table>
 <p class="caption">[그림 3] OWASP Top 10 기준 탐지 범위 분포</p>
+<p class="caption">[Figure 3] Detection Scope Distribution Based on OWASP Top 10</p>
 <img src="../reports/figures/detection_scope_distribution.png" alt="OWASP Top 10 기준 탐지 범위 분포">
 <p>ZAP 단독 OWASP Top 10 카테고리는 없었으나, OWASP Top 10에 직접 매핑되지 않는 정보성 경고 1건이 존재하였다. 따라서 본 연구에서는 해당 항목을 별도 오탐 후보로 분리하고, ZAP의 단독 Top 10 탐지 범위에는 포함하지 않았다.</p>
 <h3>4.3 오탐 분석</h3>
@@ -419,10 +422,10 @@ code {
 <p>본 연구는 화상회의 아키텍처를 대상으로 STRIDE 위협 모델링과 OWASP ZAP 동적 자동화 진단의 취약점 탐지 효과성을 OWASP Top 10 기준으로 비교하였다. 실험 결과 STRIDE는 A조가 도출한 9건의 설계 위협을 통해 8개 OWASP 카테고리를 포괄하였고, OWASP ZAP 재스캔은 4건의 경고와 8건의 인스턴스를 통해 주로 A05 Security Misconfiguration을 탐지하였다. STRIDE는 자동화 스캔이 놓치기 쉬운 권한 상승, 행위 부인 가능성, 데이터 잔류 지점, 암호화 누락 구간을 구조적으로 식별하는 데 강점이 있었다. 반면 ZAP은 실행 중인 웹 환경의 보안 헤더와 브라우저 정책 점검 및 보완 후 재검증에 강점이 있었다.</p>
 <p>따라서 화상회의 보안 평가는 STRIDE와 ZAP 중 하나만 선택하기보다, STRIDE로 위협 범위를 먼저 정의하고 ZAP으로 실제 구현과 배포 설정을 반복 검증하는 하이브리드 프로세스로 수행하는 것이 적합하다. 본 연구의 핵심 한계는 STRIDE-ZAP 정량 비교가 로컬 실습용 화상회의 웹 클라이언트와 ZAP Baseline Scan 결과를 중심으로 수행되었다는 점이다. 다만 Jitsi Meet Docker lab에서 인증, JWT, ICE 후보, Nmap 포트 노출, JVB/Jicofo/Jibri 기동을 보조 검증하여 실제 운영형 구성요소와 연결되는 위험을 추가로 확인하였다. 그럼에도 장기 부하, TURN relay 강제, 녹화 파일 생성, 모바일 앱, 운영망 로그와 개인정보 정책까지 일반화하려면 별도 운영 환경에서 추가 검증해야 한다.</p>
 <h2>References</h2>
-<p>[1] B. Feher, L. Sidi, A. Shabtai, and R. Puzis, The Security of WebRTC, arXiv:1601.00184, (2016). Available from: &lt;https://arxiv.org/abs/1601.00184&gt;</p>
-<p>[2] N. M. Al-Fannah, One Leak Will Sink A Ship: WebRTC IP Address Leaks, arXiv:1709.05395, (2017). Available from: &lt;https://arxiv.org/abs/1709.05395&gt;</p>
-<p>[3] D. Kagan, G. F. Alpert, and M. Fire, Zooming Into Video Conferencing Privacy and Security Threats, arXiv:2007.01059, (2020). Available from: &lt;https://arxiv.org/abs/2007.01059&gt;</p>
-<p>[4] S. Tang, E. Alowaisheq, X. Mi, Y. Chen, X. Wang, and Y. Dou, Stealthy Peers: Understanding Security Risks of WebRTC-Based Peer-Assisted Video Streaming, arXiv:2212.02740, (2022). Available from: &lt;https://arxiv.org/abs/2212.02740&gt;</p>
+<p>[1] B. Feher, L. Sidi, A. Shabtai, R. Puzis, and L. Marozas, &quot;WebRTC security measures and weaknesses,&quot; International Journal of Internet Technology and Secured Transactions, vol. 8, no. 1, pp. 78-102, 2018. Available from: &lt;https://doi.org/10.1504/IJITST.2018.092138&gt;</p>
+<p>[2] N. M. Al-Fannah, &quot;One leak will sink a ship: WebRTC IP address leaks,&quot; 2017 International Carnahan Conference on Security Technology (ICCST), pp. 1-5, 2017. Available from: &lt;https://doi.org/10.1109/CCST.2017.8167801&gt;</p>
+<p>[3] D. Kagan, G. F. Alpert, and M. Fire, &quot;Zooming Into Video Conferencing Privacy,&quot; IEEE Transactions on Computational Social Systems, vol. 11, no. 1, pp. 933-944, 2024. Available from: &lt;https://doi.org/10.1109/TCSS.2022.3231987&gt;</p>
+<p>[4] S. Tang, E. Alowaisheq, X. Mi, Y. Chen, X. Wang, and Y. Dou, &quot;Stealthy Peers: Understanding Security and Privacy Risks of Peer-Assisted Video Streaming,&quot; Proceedings - 2024 54th Annual IEEE/IFIP International Conference on Dependable Systems and Networks (DSN), pp. 324-337, 2024. Available from: &lt;https://doi.org/10.1109/DSN58291.2024.00041&gt;</p>
 <p>[5] OWASP Foundation, OWASP Top 10:2021, (2021). Available from: &lt;https://owasp.org/Top10/&gt;</p>
 <p>[6] OWASP Foundation, OWASP Zed Attack Proxy Documentation, (2026). Available from: &lt;https://www.zaproxy.org/docs/&gt;</p>
 <p>[7] Microsoft, Microsoft Threat Modeling Tool Threats, (2026). Available from: &lt;https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats&gt;</p>
