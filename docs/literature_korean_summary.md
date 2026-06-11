@@ -10,7 +10,7 @@
 | --- | --- | --- | --- | --- |
 | `1601.00184v1.pdf` | The Security of WebRTC | WebRTC 보안 분석 | 브라우저 기반 실시간 음성·영상 통신(WebRTC)이 어떻게 보호되고, 어디서 도청·변조·서비스 중단 위험이 생길 수 있는지 설명한다. | 미디어 패킷 암호화, AAD, replay 탐지, STRIDE 미디어 위협 근거 |
 | `1709.05395v1.pdf` | One Leak Will Sink A Ship: WebRTC IP Address Leaks | WebRTC IP 주소 노출 위험 | 화상회의나 브라우저 통신 중 ICE 후보를 통해 사용자의 사설 IP나 공인 IP가 상대에게 드러날 수 있음을 다룬다. | ICE 후보 마스킹, P2P 제한, TURN relay 권장 |
-| `1908.05901v1.pdf` | Evaluating User Perception of Multi-Factor Authentication | 다단계 인증에 대한 사용자 인식 평가 | MFA가 보안을 높이지만 사용자에게 번거롭게 느껴질 수 있어 실패 제한, 재시도 정책, 안내가 필요하다는 점을 설명한다. | TOTP, MFA 실패 잠금, MFA 코드 재사용 방지 |
+| `1908.05901v1.pdf` | Evaluating User Perception of Multi-Factor Authentication | 다단계 인증에 대한 사용자 인식 평가 | MFA가 보안을 높이지만 사용자에게 번거롭게 느껴질 수 있어 실패 제한, 재시도 정책, 안내가 필요하다는 점을 설명한다. | 인증 실패 제한, 재인증 정책, Jitsi 인증/JWT 해석 |
 | `2007.01059v1.pdf` | Zooming Into Video Conferencing Privacy and Security Threats | 화상회의 개인정보와 보안 위협 분석 | 회의 화면 캡처, 얼굴, 이름, 사용자명, 회의 링크가 공개될 때 참가자가 재식별될 수 있음을 분석한다. | 표시명 마스킹, 회의 링크 마스킹, referrer 차단, 녹화 정책 |
 | `2212.02740v2.pdf` | Stealthy Peers | 은밀한 피어와 P2P 위험 | WebRTC P2P 구조에서 상대 피어가 IP를 노출시키거나 미디어 조각을 오염시키거나 자원을 점유할 수 있는 문제를 설명한다. | P2P 비활성화 권장, TURN relay, privacy advisor 설정 |
 | `2406.11618v4.pdf` | SoK: Regular Expression Denial of Service | 정규식 서비스 거부 공격 정리 | 위험한 정규식은 특정 입력에서 처리 시간이 폭증해 서비스 거부(ReDoS)를 유발할 수 있음을 정리한다. | 정규식 길이 제한, 위험 정규식 구조 차단, 안전 검색 API |
@@ -70,7 +70,7 @@ Jitsi Meet 실습에서는 외부 공개 서버가 아니라 본인 PC의 로컬
 | --- | --- | --- |
 | WebRTC 보안 논문 | 사용 | 미디어 도청·변조·중단 위협 근거 |
 | WebRTC IP leak 논문 | 사용 | ICE 후보와 IP 노출 위협 근거 |
-| MFA 논문 | 사용 | TOTP/MFA 실패 제한 근거 |
+| MFA 논문 | 사용 | 인증 실패 제한과 재인증 정책 해석 근거 |
 | 화상회의 개인정보 논문 | 사용 | 표시명, 얼굴, 회의 링크 재식별 위험 근거 |
 | Stealthy Peers 논문 | 사용 | P2P 제한과 TURN relay 근거 |
 | ReDoS SoK 논문 | 사용 | 위험 정규식 차단 근거 |

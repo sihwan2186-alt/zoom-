@@ -91,7 +91,7 @@ Zoom, Jitsi Meet 같은 제품명은 논문 제목, 참고 사례, 테스트용 
 | --- | --- | --- | --- | --- |
 | `1601.00184v1.pdf` | The Security of WebRTC | WebRTC 보안 분석 | WebRTC의 중단, 변조, 도청 위협 | STRIDE 항목, 미디어 AAD, replay 탐지 |
 | `1709.05395v1.pdf` | One Leak Will Sink A Ship: WebRTC IP Address Leaks | WebRTC IP 주소 노출 위험 | WebRTC IP 주소 노출과 네트워크 식별 위험 | ICE 후보 마스킹, P2P 제한, TURN relay 권장 설정 |
-| `1908.05901v1.pdf` | Evaluating User Perception of Multi-Factor Authentication | 다단계 인증에 대한 사용자 인식 평가 | MFA의 보안 효과와 사용성 한계 | TOTP, MFA 실패 잠금, 코드 재사용 방지 |
+| `1908.05901v1.pdf` | Evaluating User Perception of Multi-Factor Authentication | 다단계 인증에 대한 사용자 인식 평가 | MFA의 보안 효과와 사용성 한계 | 인증 실패 제한, 재인증 정책, Jitsi 인증/JWT 해석 |
 | `2007.01059v1.pdf` | Zooming Into Video Conferencing Privacy and Security Threats | 화상회의 개인정보와 보안 위협 분석 | 공개 회의 캡처의 얼굴/이름/사용자명 재식별 위험 | 표시명/회의 링크/이미지 URL 마스킹, CSP/referrer/sandbox |
 | `2212.02740v2.pdf` | Stealthy Peers | 은밀한 피어와 P2P 위험 | WebRTC P2P/peer-assisted 구조의 노출과 오염 위험 | P2P 비활성화 권장, privacy advisor 설정 |
 | `2406.11618v4.pdf` | SoK: Regular Expression Denial of Service | 정규식 서비스 거부 공격 정리 | ReDoS 취약 정규식 패턴 | 정규식 길이/구조 검증, 안전 검색 API |
@@ -109,7 +109,7 @@ Zoom, Jitsi Meet 같은 제품명은 논문 제목, 참고 사례, 테스트용 
 
 | 영역 | 실험 대상 보안 요소 | STRIDE-ZAP 비교 관점 |
 | --- | --- | --- |
-| 인증 | PBKDF2-HMAC-SHA256, TOTP, MFA 실패 잠금, TOTP 재사용 방지, 회의방/역할 claim, 토큰 폐기 | STRIDE는 인증 우회와 권한 상승 시나리오를 식별하고, ZAP는 로그인 흐름과 세션 처리의 노출 취약점을 탐지 |
+| 인증 | Jitsi 인증/JWT 흐름, 회의방 역할, 게스트 입장 정책, 재인증 필요성 | STRIDE는 인증 우회와 권한 상승 시나리오를 식별하고, ZAP는 로그인 흐름과 세션 처리의 노출 취약점을 탐지 |
 | 세션 | idle/absolute timeout, CSRF 토큰, refresh 시 CSRF 회전, `__Host-vc_session` | STRIDE는 세션 탈취·고정 위협을 모델링하고, ZAP는 쿠키 속성·CSRF 관련 구현 문제를 확인 |
 | 암호화 | AES-GCM 우선, 운영 모드 fallback 차단, 회의/참가자/epoch/sequence AAD, replay 탐지 | STRIDE는 미디어 도청·변조·재전송 위협을 식별하고, ZAP는 웹 계층에서 노출되는 전송 보안 문제를 확인 |
 | 그룹 키 | 참가자 변경 시 epoch 키 갱신 모델 | STRIDE는 참가자 변경 후 키 노출과 권한 잔존 문제를 다루고, ZAP는 해당 설계 위협을 직접 탐지하기 어려움 |
@@ -122,7 +122,6 @@ Zoom, Jitsi Meet 같은 제품명은 논문 제목, 참고 사례, 테스트용 
 
 | 파일 | 추가/수정 내용 | 기대 효과 |
 | --- | --- | --- |
-| `화상회의/zoom-/security/authentication/AuthModule.java` | PBKDF2-HMAC-SHA256, TOTP, MFA 실패 잠금, TOTP 재사용 방지, 회의방/역할 바인딩 토큰, token revocation | 계정 탈취와 토큰 재사용 위험 감소 |
 | `화상회의/zoom-/security/session_management/session_security.py` | idle/absolute timeout, CSRF 토큰 생성/검증, refresh 시 CSRF 회전, `__Host-` 쿠키 헤더 | 세션 고정, 장기 세션 악용, 요청 위조 방지 |
 | `화상회의/zoom-/security/encryption/encryption.py` | AES-GCM 우선 사용, 데모 fallback 제한 옵션, 회의별 AAD, replay 탐지, epoch 키 스케줄 | 미디어 변조/재전송/참가자 변경 후 키 노출 위험 감소 |
 | `화상회의/zoom-/security/data_leak_prevention/data_protection.py` | 회의 링크/표시명/ICE 후보/이미지 URL 마스킹, 보존기간 정책, 개인정보 보호 설정 생성기 | 회의 메타데이터와 개인정보 유출 감소 |
@@ -173,12 +172,6 @@ Zoom, Jitsi Meet 같은 제품명은 논문 제목, 참고 사례, 테스트용 
 
 ```powershell
 python -m compileall "화상회의\zoom-"
-javac -encoding UTF-8 -d .tmp_classes "화상회의\zoom-\security\authentication\AuthModule.java"
-java -cp .tmp_classes AuthModule
-python "화상회의\zoom-\security\encryption\encryption.py"
-python "화상회의\zoom-\security\session_management\session_security.py"
-python "화상회의\zoom-\security\data_leak_prevention\data_protection.py"
-python "화상회의\zoom-\security\buffer_overflow\buffer_protection.py"
 python "화상회의\zoom-\security\assessment\threat_zap_comparison.py" --stride-json ".\reports\stride\stride_findings.json" --zap-json ".\reports\zap\secure\zap-secure-report.json" --zap-minutes 5 --output-md ".\reports\comparison\stride_zap_comparison.md" --output-json ".\reports\comparison\stride_zap_summary.json"
 ```
 
@@ -188,7 +181,7 @@ python "화상회의\zoom-\security\assessment\threat_zap_comparison.py" --strid
 python "화상회의\zoom-\client\secure_static_server.py" --port 8082
 ```
 
-검증 명령은 성공했다. 현재 환경에는 `cryptography` 패키지가 없어 RSA 전자봉투 데모는 건너뛰었지만, 암호화 모듈의 기본 실행과 미디어 패킷 암복호화 검증은 통과했다. 보안 헤더 서버는 로컬 요청으로 CSP, X-Frame-Options, X-Content-Type-Options, Permissions-Policy, Cross-Origin 계열 헤더가 응답에 포함되는 것을 확인했고, Docker 기반 OWASP ZAP Baseline Scan도 완료했다.
+검증 명령은 성공했다. 현재 검증 흐름은 Python 정적 컴파일, Markdown lint, Pyright, STRIDE-ZAP 비교 보고서 재생성, 그래프 재생성을 중심으로 구성되어 있다. 보안 헤더 서버는 로컬 요청으로 CSP, X-Frame-Options, X-Content-Type-Options, Permissions-Policy, Cross-Origin 계열 헤더가 응답에 포함되는 것을 확인했고, Docker 기반 OWASP ZAP Baseline Scan도 완료했다.
 
 비교 스크립트는 Markdown 보고서 안에 다음 산출물을 포함하도록 구성했다.
 
@@ -261,254 +254,20 @@ python "화상회의\zoom-\client\secure_static_server.py" --port 8082
 | 단독 탐지 영역 | STRIDE는 A01/A02/A03/A04/A07/A08/A09 설계 위협을 더 넓게 포착했고, ZAP의 Top 10 단독 카테고리는 없었다. 다만 `10109 Modern Web Application`은 OWASP 미매핑 정보성 신호로 남았다. |
 | 종합 판단 | 두 방법은 대체 관계보다 보완 관계에 가깝다. STRIDE로 설계 위협을 선제적으로 정리하고 ZAP로 실행 환경의 취약점을 반복 검증하는 방식이 화상회의 보안 평가에 더 적합하다. |
 
-## 9. 5가지 보완 강화 항목
+## 9. 현재 코드 범위와 보완 방향
 
-외부 피드백을 반영하여 다음 5가지 항목을 추가로 분석하고 구현하였다.
+최신 정리 이후 저장소에는 논문 결론을 뒷받침하는 핵심 실습 모듈만 남겼다. 삭제된 고급 데모 모듈을 구현 완료 항목처럼 설명하지 않도록, 현재 코드 범위는 다음과 같이 정리한다.
 
-### 9.1 Zero Trust 아키텍처 확장
-
-**상태**: ⭐⭐ 부분 구현
-
-Zero Trust 아키텍처는 "절대 신뢰하지 않음, 항상 검증" 원칙을 따릅니다. 기존 연구에서는 신뢰 경계 분석에 머물렀으나, 이제 다층 검증을 통합했습니다.
-
-**구현 내용**:
-
-- `화상회의/zoom-/security/zero_trust/zero_trust_architecture.py`: Zero Trust Policy Engine
-  - 사용자, 기기, 네트워크, 맥락 4개 층 지속적 검증
-  - MFA 재인증, 기기 상태 확인, 네트워크 이상 탐지
-  - 접근 요청마다 신뢰도 점수 산출 (0-100)
-  - 최소 권한 원칙 (Least Privilege) 자동 적용
-
-**적용 범위**:
-
-- 세션 중 5분마다 재검증
-- 리소스 접근 시마다 신뢰도 재평가
-- 위험 점수 상향 시 세션 자동 종료
-
-**제한사항**:
-
-- 단일 서버 환경 기준 (분산 환경에서는 중앙 정책 저장소 필요)
-- 네트워크 이상 탐지는 mock 기반 (실제 SIEM 연동 필요)
-
-### 9.2 법적/컴플라이언스 프레임워크
-
-**상태**: ⭐⭐⭐ 전반적 구현
-
-국제 규제 및 지역별 개인정보 보호 법률을 체계적으로 매핑했습니다.
-
-**구현 내용**:
-
-- `화상회의/zoom-/security/compliance/compliance_framework.py`: Compliance Assessment Engine
-  - GDPR (유럽): 동의, 삭제권, 침해 알림, DPIA (8개 체크포인트)
-  - HIPAA (미국): 접근 제어, TLS, 저장 암호화, 감사 로그 (6개 체크포인트)
-  - 한국 개인정보보호법: 안전성 확보, 동의, 처리방침 공개, 유출 신고 (6개 체크포인트)
-  - ISO 27001:2022: 사용자 관리, 암호화, 정책, 사건 관리 (5개 체크포인트)
-
-**컴플라이언스 평가 결과**:
-
-| 규제 | 완전 준수 | 부분 준수 | 미준수 | 준수율 |
-| --- | --- | --- | --- | --- |
-| GDPR | 2/8 | 4/8 | 2/8 | 25.0% |
-| HIPAA | 2/6 | 3/6 | 1/6 | 33.3% |
-| 한국 개인정보보호법 | 1/6 | 4/6 | 1/6 | 16.7% |
-| ISO 27001:2022 | 2/5 | 2/5 | 1/5 | 40.0% |
-
-**중대 이슈** (즉시 개선 필요):
-
-- 개인정보 삭제 요청 API 미구현
-- 침해 자동 알림 시스템 미흡
-- 데이터 내보내기 기능 부재
-- 사건 대응 계획(IRP) 문서 미작성
-
-**향후 개선**:
-
-- GDPR 공식 개인정보처리방침 웹페이지 게시
-- HIPAA 중앙 감시(SIEM) 도입
-- 자동 침해 알림 체계 구축
-
-### 9.3 AI 기반 위협 모델링
-
-**상태**: ⭐⭐⭐ 기계학습 기반 탐지 엔진 구현
-
-머신러닝을 기반으로 이상 행동을 탐지하고 위협을 분류하는 시스템을 개발했습니다.
-
-**구현 내용**:
-
-- `화상회의/zoom-/security/ai_threat_modeling/threat_detection_engine.py`: Threat Detection Engine
-  - **이상 탐지 (Anomaly Detection)**: Z-score 기반 9개 특성 분석
-    - 로그인 시간, 빈도, IP 다양성, 실패 횟수, 세션 길이, 리소스 접근, 데이터 전송, 시간대, 기기 변경
-    - 각 특성별 정상 프로필과 표준편차 정의
-
-  - **위협 분류 (Classification)**: 패턴 매칭 기반 7가지 위협 유형
-    - 인증 우회 (Authentication Bypass)
-    - 권한 상승 (Privilege Escalation)
-    - 데이터 유출 (Data Exfiltration)
-    - 서비스 거부 (DoS)
-    - 재전송 공격 (Replay)
-    - 중간자 공격 (MITM)
-    - 내부자 위협 (Insider Threat)
-
-  - **신뢰도 계산**: (이상 점수 + 분류 신뢰도) / 2
-  - **자동 대응**: 위협 유형과 신뢰도에 따른 권장 조치 생성
-
-**적용 사례**:
-
-```text
-시나리오 1: 정상 사용자
-- 신뢰도: 10% → 승인
-- 권장 조치: 계속 모니터링
-
-시나리오 2: 인증 우회 시도 (야간 반복 로그인, 12회 실패)
-- 신뢰도: 82% → 거부
-- 권장 조치: 세션 즉시 종료, MFA 재검증
-
-시나리오 3: 데이터 유출 (150MB 전송)
-- 신뢰도: 75% → 거부
-- 권장 조치: 데이터 전송 차단, 감시 강화
-
-시나리오 4: 내부자 위협 (휴일 야간, 12개 리소스, 80MB 전송)
-- 신뢰도: 78% → 거부
-- 권장 조치: 감시 강화, 데이터 접근 제한 검토
-```
-
-**제한사항**:
-
-- 현재는 규칙 기반 패턴 매칭 (실제 ML 모델 학습 필요)
-- 히스토리가 없어 정상 프로필이 가정 기반
-- 다중 테넌트 환경에서 사용자별 프로필 학습 필요
-
-### 9.4 실증 침투 테스트 심화
-
-**상태**: ⭐⭐⭐ 실습급 침투 테스트 시나리오 완성
-
-OWASP ZAP Baseline 스캔을 넘어 수동 공격 시나리오와 심화 진단을 추가했습니다.
-
-**구현 내용**:
-
-- `화상회의/zoom-/security/penetration_testing/advanced_pentest.py`: Advanced Penetration Testing Framework
-  - 51개 공격 시나리오 (CVSS 점수 포함)
-
-**공격 범주**:
-
-1. **인증 우회** (3건)
-   - 기본 자격증명 테스트
-   - JWT 토큰 조작
-   - 만료된 토큰 재사용
-
-2. **세션 보안** (2건)
-   - 세션 고정 공격
-   - CSRF 보호 우회
-
-3. **암호화 약점** (3건)
-   - 약한 알고리즘 (DES, RC4, MD5, SHA-1)
-   - TLSv1.0, TLSv1.1, SSLv3 지원 확인
-   - 128비트 이하 키 길이 검증
-
-4. **WebRTC 특화** (2건)
-   - ICE 후보 정보 유출
-   - SRTP 키 추출 가능성
-
-5. **주입 공격** (6건)
-   - SQL Injection (3개 페이로드)
-   - XSS (3개 페이로드)
-   - OS Command Injection
-
-**취약점 심각도 분포**:
-
-| 심각도 | 건수 | 예시 |
-| --- | --- | --- |
-| CRITICAL | 6 | SQL Injection, Command Injection, Default Credentials |
-| HIGH | 19 | XSS, Weak TLS, SRTP |
-| MEDIUM | 20 | CSRF, Weak Encryption, Session Fixation |
-| LOW | 6 | Information Disclosure |
-
-**평균 CVSS 점수**: 7.2/10
-
-**제한사항**:
-
-- 현재는 공격 시나리오 설명 (실제 PoC 실행 전 환경 구축 필요)
-- 수동 침투 테스트는 자격 있는 보안 전문가 필요
-- Docker 기반 Jitsi Meet 격리 환경에서만 실행 권장
-
-**향후 확대**:
-
-- Active Scan 자동화
-- Nmap 포트 노출 검사
-- WebRTC ICE 후보 수집 결과 분석
-- TURN/XMPP 서버 테스트
-
-### 9.5 암호화 구조 분석 심화
-
-**상태**: ⭐⭐⭐⭐ 종합 암호화 감시 시스템
-
-기존 AES-GCM 구현을 넘어, 전체 암호화 스택과 E2EE 아키텍처를 분석했습니다.
-
-**구현 내용**:
-
-- `화상회의/zoom-/security/cryptography/enhanced_crypto_analysis.py`: Cryptographic Audit System
-
-**암호화 알고리즘 평가** (14개 알고리즘):
-
-| 알고리즘 | 강도 | 상태 | 권장사항 |
+| 영역 | 현재 파일 | 현재 역할 | 남은 보완 방향 |
 | --- | --- | --- | --- |
-| AES-256-GCM | 우수 (4/4) | ✅ 현재 사용 | 권장 유지 |
-| ChaCha20-Poly1305 | 우수 (4/4) | ⭕ 미사용 | 모바일에 권장 |
-| TLS 1.3 | 우수 (4/4) | ✅ 현재 사용 | 권장 유지 |
-| PBKDF2-SHA256 | 양호 (3/4) | ✅ 현재 사용 | iteration >= 100k |
-| Argon2id | 우수 (4/4) | ⭕ 미사용 | 다음 버전에 도입 |
-| ECDH-P256 | 양호 (3/4) | ✅ 현재 사용 | P-384 업그레이드 권장 |
-| MD5 | 파괴됨 (0/4) | ❌ 폐기됨 | 즉시 제거 |
-| SHA-1 | 약함 (1/4) | ❌ 폐기 중 | 부분적 폐기 |
+| 웹 클라이언트 | `화상회의/zoom-/client/index.html`, `app.js`, `secure_static_server.py` | 회의 ID 입력 검증, 난수 기반 회의 ID 생성, Jitsi Meet iframe 옵션 전달, 보안 헤더 적용 | 실제 인증 서버, TURN relay 강제, 배포 환경 TLS/HSTS 검증 |
+| 세션 보안 | `security/session_management/session_security.py` | idle/absolute timeout, CSRF 토큰, `__Host-` 쿠키 헤더 모델 | 중앙 세션 저장소, 다중 서버 토큰 폐기 동기화 |
+| 암호화 모델 | `security/encryption/encryption.py` | AES-GCM 우선 미디어 암호화 모델, AAD, replay 탐지, epoch 키 스케줄 | 실제 WebRTC Insertable Streams 또는 SFrame 연동 |
+| 개인정보 보호 | `security/data_leak_prevention/data_protection.py` | 회의 링크, 표시명, ICE 후보, 이미지 URL 마스킹과 보존기간 정책 | 운영 개인정보처리방침, 녹화/채팅/자막 보존정책 연동 |
+| 입력 검증 | `security/buffer_overflow/buffer_protection.py` | 회의 ID/표시명 allow-list, ReDoS 위험 정규식 검증, 스캔 범위 검증 | 서버 API와 동일한 검증 규칙 공유 |
+| 비교 분석 | `security/assessment/threat_zap_comparison.py` | STRIDE 결과와 ZAP JSON을 OWASP Top 10 기준으로 매핑하고 보고서/요약 JSON 생성 | Active Scan, Nmap, 운영형 Jitsi 검증 결과를 별도 실험으로 확장 |
 
-**현재 암호화 모듈 평가**:
-
-1. **미디어 암호화 (AES-256-GCM)**
-   - AAD 구조: conference_id | participant_id | epoch | sequence (우수)
-   - IV: 96비트, TAG: 128비트 (표준)
-   - Replay 탐지: 시퀀스 번호 검증 (우수)
-
-2. **비밀번호 해싱 (PBKDF2-HMAC-SHA256)**
-   - Iteration: 100,000 (2024년 기준 권장: 310,000)
-   - Salt: 32바이트 (적절)
-   - 개선: Argon2 전환 고려
-
-3. **세션 토큰 (JWT-HS256)**
-   - Signature 검증: O (우수)
-   - 만료: 3600초 (1시간)
-   - 권한 바인딩: room + role (우수)
-
-4. **전송 보안 (TLS 1.3)**
-   - Cipher Suite: TLS_AES_256_GCM_SHA384 (우수)
-   - Key Exchange: ECDHE-P384 (우수)
-
-**식별된 암호화 취약점** (4건):
-
-| ID | 제목 | 심각도 | 이유 | 개선 방안 |
-| --- | --- | --- | --- | --- |
-| CRYPTO-001 | 마스터 키 저장소 미흡 | HIGH | 환경 변수 저장 | KMS/Vault 도입 |
-| CRYPTO-002 | Double Ratchet 부재 | MEDIUM | E2EE 미지원 | Signal Protocol 구현 |
-| CRYPTO-003 | PBKDF2 iteration 검토 | LOW | 정기적 상향 필요 | 해마다 증가 |
-| CRYPTO-004 | 키 로테이션 정책 부재 | MEDIUM | 장기 키 유출 위험 | 주기적 로테이션 계획 |
-
-**End-to-End Encryption 권장안**:
-
-- **Signal Protocol**: 1:1 메시징, Double Ratchet 구현
-  - Forward Secrecy (과거 키 유출 시에도 안전)
-  - Break-in Recovery (미래는 안전)
-  - libsignal 라이브러리 사용 권장
-
-- **MLS (Messaging Layer Security)**: 그룹 메시징 (RFC 9420)
-  - 대규모 화상회의에 최적
-  - IETF 표준
-  - WebRTC 통합 용이
-
-**시간축 개선 로드맵**:
-
-```bash
-1개월: Argon2 도입, 키 로테이션 정책 수립
-3개월: KMS/Vault 통합
-6개월: Signal Protocol 또는 MLS 파일럿
-```
+Zero Trust, 컴플라이언스 자동 평가, AI 기반 위협 탐지, 고급 침투 테스트, 암호화 감사 시스템은 향후 확장 가능한 주제이지만, 현재 코드베이스의 유지 대상에서는 제외했다. 따라서 본 보고서의 결론은 현재 남아 있는 로컬 실습 코드, STRIDE 입력 데이터, ZAP Baseline Scan 결과, Jitsi Meet 보조 검증 결과를 근거로 해석한다.
 
 ## 10. 최종 결론
 
@@ -518,4 +277,4 @@ OWASP ZAP Baseline 스캔을 넘어 수동 공격 시나리오와 심화 진단�
 
 따라서 화상회의 시스템 보안 평가는 STRIDE와 ZAP 중 하나만 선택하기보다, STRIDE로 위협 범위를 먼저 정의하고 ZAP로 실제 구현 취약점을 검증한 뒤, 두 결과를 OWASP Top 10 기준으로 매핑하여 보완 우선순위를 정하는 방식이 가장 적절하다.
 
-추가로, 본 연구의 5가지 보완 항목(Zero Trust 아키텍처, 규제 컴플라이언스, AI 기반 위협 탐지, 침투 테스트, 암호화 감사)을 함께 적용함으로써 화상회의 시스템의 보안 성숙도를 대폭 향상시킬 수 있다. 각 항목은 독립적으로도 운영 가능하며, 조직의 규모와 규제 환경에 따라 선택적으로 도입할 수 있다.
+향후에는 Zero Trust 정책 엔진, 규제 컴플라이언스 자동 평가, AI 기반 위협 탐지, 고급 침투 테스트, 암호화 감사 체계를 별도 모듈로 확장할 수 있다. 다만 현재 결론은 로컬 실습 코드와 STRIDE-ZAP 비교 결과에 한정해 해석하는 것이 타당하다.
