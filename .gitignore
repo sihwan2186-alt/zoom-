@@ -29,6 +29,3 @@ __pycache__/
 **/__pycache__/
 *.py[cod]
 *.class
-화상회의/zoom-/security/authentication/bin/
-화상회의/zoom-/security/authentication/.classpath
-화상회의/zoom-/security/authentication/.project

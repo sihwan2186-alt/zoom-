@@ -23,8 +23,8 @@ Zoom, Jitsi Meet 같은 제품명은 논문 제목, 참고 사례, 테스트용 
 | 시각화 | Markdown 표와 PNG 기반 커버리지/탐지범위/ZAP 감소 그래프 출력 추가 |
 | 논문 초안 | `paper/paper_draft.md`와 `paper/paper_submission_STRIDE_ZAP.docx`에 초록, 서론, 선행연구, 연구방법, 분석결과, 결론, 참고문헌 작성 |
 | 진행 현황표 | `docs/research_progress_status.md`에 완료 항목과 남은 보완 작업 정리 |
-| 실험 대상 코드 | 인증, 세션, 암호화, 개인정보 보호, 입력 검증, 평가 모듈에 화상회의 특화 보안 요소 반영 |
-| 검증 | Python/Java 컴파일, 주요 보안 모듈 실행, 실제 ZAP JSON 기반 STRIDE-ZAP 비교 산출물 생성 검증 완료 |
+| 실험 대상 코드 | 웹 클라이언트, 세션, 암호화, 개인정보 보호, 입력 검증, 평가 모듈에 화상회의 특화 보안 요소 반영 |
+| 검증 | Pyright, Markdownlint, Python 컴파일, 실제 ZAP JSON 기반 STRIDE-ZAP 비교 산출물 생성 검증 완료 |
 
 ## 2. 연구 설계와 검증방법
 
@@ -115,7 +115,7 @@ Zoom, Jitsi Meet 같은 제품명은 논문 제목, 참고 사례, 테스트용 
 | 그룹 키 | 참가자 변경 시 epoch 키 갱신 모델 | STRIDE는 참가자 변경 후 키 노출과 권한 잔존 문제를 다루고, ZAP는 해당 설계 위협을 직접 탐지하기 어려움 |
 | 개인정보 보호 | 회의 링크, 표시명, 얼굴/아바타 URL, ICE 후보 마스킹, 보존기간 정책 | STRIDE는 정보 노출과 재식별 위험을 폭넓게 식별하고, ZAP는 응답 본문·헤더·URL에 노출된 정보 탐지에 강점 |
 | 입력 검증 | 회의 ID/표시명 allow-list, ReDoS 정규식 검증, 안전 검색 API | STRIDE는 서비스 거부와 입력 변조 시나리오를 정리하고, ZAP는 XSS·주입·경로 노출 같은 웹 취약점을 탐지 |
-| 브라우저 보안 | CSP, referrer 차단, iframe sandbox, 암호학적 난수 회의 ID, privacy 설정 파라미터 | STRIDE는 제3자 임베드와 링크 유출 위협을 식별하고, ZAP는 보안 헤더 누락과 브라우저 정책 설정 문제를 확인 |
+| 브라우저 보안 | HTTP CSP 헤더, referrer 차단, iframe sandbox, 암호학적 난수 회의 ID, privacy 설정 파라미터 | STRIDE는 제3자 임베드와 링크 유출 위협을 식별하고, ZAP는 보안 헤더 누락과 브라우저 정책 설정 문제를 확인 |
 | 평가 | 화상회의 특화 STRIDE 항목, ZAP 경고와 OWASP Top 10 매핑 | 두 결과를 동일 기준으로 비교해 중복 탐지, 단독 탐지, 우선 대응 항목을 산출 |
 
 ## 5. 실험 대상 코드 구성
@@ -127,7 +127,7 @@ Zoom, Jitsi Meet 같은 제품명은 논문 제목, 참고 사례, 테스트용 
 | `화상회의/zoom-/security/data_leak_prevention/data_protection.py` | 회의 링크/표시명/ICE 후보/이미지 URL 마스킹, 보존기간 정책, 개인정보 보호 설정 생성기 | 회의 메타데이터와 개인정보 유출 감소 |
 | `화상회의/zoom-/security/buffer_overflow/buffer_protection.py` | 회의 ID/표시명 검증, ReDoS 위험 정규식 검증, 안전 검색 API, 스캔 범위 검증 | 입력 기반 공격과 무단 스캔 오용 방지 |
 | `화상회의/zoom-/security/assessment/threat_zap_comparison.py` | `PAPER_EVIDENCE`, 화상회의 특화 STRIDE 항목, ZAP 경고와 OWASP Top 10 비교, ZAP 경고별 오탐 검토표 | 설계 위협과 자동 진단 결과를 함께 설명 가능 |
-| `화상회의/zoom-/client/index.html` | 외부 CSS/JS 분리, CSP, referrer 차단, sandbox iframe, 난수 기반 회의 ID, 회의 ID allow-list, privacy URL 옵션 | 브라우저 측 회의 링크/제3자 요청/임베드 위험 완화 |
+| `화상회의/zoom-/client/index.html` | 외부 CSS/JS 분리, referrer 차단, sandbox iframe, 난수 기반 회의 ID, 회의 ID allow-list, privacy URL 옵션 | 브라우저 측 회의 링크/제3자 요청/임베드 위험 완화 |
 | `화상회의/zoom-/client/secure_static_server.py` | CSP, X-Frame-Options, X-Content-Type-Options, Permissions-Policy, Cross-Origin 계열 헤더, no-store 캐시 정책 적용 | ZAP이 지적한 보안 헤더 누락과 서버 버전 노출 위험 완화 |
 | `.gitignore` | 임시 렌더/컴파일 산출물 제외, 핵심 `reports` 산출물과 `reports/figures/*.png`만 보존 | 논문 텍스트 추출 임시 산출물과 실습 보고서 산출물 관리 |
 
@@ -206,7 +206,7 @@ python "화상회의\zoom-\client\secure_static_server.py" --port 8082
 | 위험도 점수 | DREAD 합계 347 | 가중 위험 점수 10 | 우선 검토 STRIDE 항목은 D-01, E-01, S-01, T-01, S-02 |
 | ZAP 위험도 분포 | - | Medium 1, Informational 3 | High 경고는 0건 |
 | 오탐 검토 | 0건 제외 | 오탐 후보 1건 | `10109 Modern Web Application`은 직접 취약점보다 앱 구조 식별 신호에 가까움 |
-| 소요시간 지표 | 75.0분, 0.12건/분 | 5.0분, 0.80건/분 | B안은 짧은 시간 안에 반복 측정이 가능함 |
+| 소요시간 지표 | 75.0분, 0.12건/분 | 5.0분, 0.80건/분 | ZAP은 짧은 시간 안에 반복 측정이 가능함 |
 
 #### OWASP Top 10 커버리지 그래프
 

@@ -7,8 +7,7 @@
         "**/.*",
         "**/.tmp_classes/**",
         "**/.tmp_pdf/**",
-        "**/.tmp_pdf_text/**",
-        "**/security/authentication/bin/**"
+        "**/.tmp_pdf_text/**"
     ],
     "python.analysis.ignore": [
         "**/.tmp_pdf/**",
@@ -22,13 +21,6 @@
         ".tmp_classes/**",
         "**/.tmp_pdf/**"
     ],
-    "java.server.launchMode": "Standard",
-    "java.configuration.updateBuildConfiguration": "automatic",
-    "java.errors.incompleteClasspath.severity": "ignore",
-    "java.project.sourcePaths": [
-        "\ud654\uc0c1\ud68c\uc758/zoom-/security/authentication"
-    ],
-    "java.project.outputPath": ".tmp_classes",
     "files.associations": {
         "**/.tmp_pdf/**/LICENSE": "plaintext",
         "**/.tmp_pdf/**/METADATA": "plaintext"
@@ -36,13 +28,11 @@
     "files.watcherExclude": {
         "**/.tmp_pdf/**": true,
         "**/.tmp_pdf_text/**": true,
-        "**/.tmp_classes/**": true,
-        "**/security/authentication/bin/**": true
+        "**/.tmp_classes/**": true
     },
     "search.exclude": {
         "**/.tmp_pdf/**": true,
         "**/.tmp_pdf_text/**": true,
-        "**/.tmp_classes/**": true,
-        "**/security/authentication/bin/**": true
+        "**/.tmp_classes/**": true
     }
 }
