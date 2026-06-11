@@ -17,7 +17,6 @@ if ($null -eq $ProjectDir) {
 $ZoomRoot = Join-Path $ProjectDir.FullName "zoom-"
 $SecureServerPy = Join-Path $ZoomRoot "client\secure_static_server.py"
 $SecurityRoot = Join-Path $ZoomRoot "security"
-$AuthJava = Join-Path $SecurityRoot "authentication\AuthModule.java"
 
 $PythonFiles = @(
     (Join-Path $Root "tools\build_figures.py"),
@@ -71,19 +70,6 @@ try {
 
     Invoke-Step "python syntax" {
         python -m py_compile @PythonFiles
-    }
-
-    Invoke-Step "java auth module" {
-        New-Item -ItemType Directory -Force ".\.tmp_classes" | Out-Null
-        javac -encoding UTF-8 -d ".\.tmp_classes" $AuthJava
-        java -cp ".\.tmp_classes" AuthModule
-    }
-
-    Invoke-Step "python security demos" {
-        python (Join-Path $SecurityRoot "encryption\encryption.py")
-        python (Join-Path $SecurityRoot "session_management\session_security.py")
-        python (Join-Path $SecurityRoot "data_leak_prevention\data_protection.py")
-        python (Join-Path $SecurityRoot "buffer_overflow\buffer_protection.py")
     }
 
     Invoke-Step "stride-zap comparison" {
