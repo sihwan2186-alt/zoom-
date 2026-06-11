@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; frame-src https://meet.jit.si; connect-src 'self' https://meet.jit.si wss://meet.jit.si; img-src 'self' data: https://meet.jit.si; style-src 'self'; script-src 'self'; form-action 'self';">
     <title>SW개발보안 1팀 SecureMeet</title>
     <link rel="stylesheet" href="styles.css">
 
@@ -35,7 +34,7 @@
             
             <div id="login-tab" class="tab-content active">
                 <div class="alert alert-info">
-                    <strong>SW개발보안 1팀 인증 게이트</strong>
+                    <strong>로컬 실습용 인증 화면</strong>
                 </div>
                 
                 <div class="form-group">
@@ -46,12 +45,6 @@
                 <div class="form-group">
                     <label>비밀번호</label>
                     <input type="password" id="password" placeholder="비밀번호 입력">
-                </div>
-                
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="mfa-enabled"> 다단계 인증 사용
-                    </label>
                 </div>
                 
                 <button type="button" id="login-button" class="btn btn-primary">로그인</button>
@@ -87,7 +80,7 @@
                 </div>
                 <div class="status-pill" aria-label="회의 상태">
                     <span id="active-meeting-label">회의 대기 중</span>
-                    <span>보안 모드 활성</span>
+                    <span>보안 점검 모드</span>
                 </div>
             </div>
             <div class="tabs">
@@ -128,17 +121,17 @@
             
             <div id="security-tab" class="tab-content">
                 <div class="alert alert-success">
-                    <strong>활성화된 보안 기능:</strong>
+                    <strong>이 화면에서 점검하는 보안 항목:</strong>
                 </div>
                 
                 <ul class="feature-list">
-                    <li>AES-256-GCM 암호화</li>
-                    <li>RSA-4096 키 교환</li>
-                    <li>다단계 인증 (MFA)</li>
-                    <li>종단 간 암호화 (E2EE)</li>
-                    <li>세션 고정 공격 방어</li>
-                    <li>메타데이터 보호</li>
-                    <li>입력 검증 및 샌드박스</li>
+                    <li>회의실 ID allow-list 입력 검증</li>
+                    <li>암호학적 난수 기반 회의실 ID 생성</li>
+                    <li>Jitsi Meet 임베드 시 P2P 비활성화 옵션 전달</li>
+                    <li>초기 오디오·비디오 음소거 및 초대 기능 제한 옵션 전달</li>
+                    <li>iframe sandbox와 no-referrer 정책 적용</li>
+                    <li>보안 헤더는 secure_static_server.py에서 HTTP 응답 헤더로 적용</li>
+                    <li>E2EE와 로비 모드는 외부 회의 엔진 지원 범위 안에서 요청</li>
                 </ul>
             </div>
             
@@ -166,24 +159,24 @@
             <!-- 보안 정보 -->
             <div class="security-info">
                 <div class="security-badge">
-                    <div class="icon">AES</div>
-                    <div class="label">암호화</div>
-                    <div class="value">AES-256</div>
+                    <div class="icon">ID</div>
+                    <div class="label">회의 ID</div>
+                    <div class="value">Allow-list</div>
                 </div>
                 <div class="security-badge">
-                    <div class="icon">RSA</div>
-                    <div class="label">키 교환</div>
-                    <div class="value">RSA-4096</div>
+                    <div class="icon">RNG</div>
+                    <div class="label">회의 생성</div>
+                    <div class="value">Crypto API</div>
                 </div>
                 <div class="security-badge">
-                    <div class="icon">E2EE</div>
-                    <div class="label">E2EE</div>
-                    <div class="value">선택 적용</div>
+                    <div class="icon">CSP</div>
+                    <div class="label">브라우저 정책</div>
+                    <div class="value">헤더 적용</div>
                 </div>
                 <div class="security-badge">
-                    <div class="icon">MFA</div>
-                    <div class="label">MFA</div>
-                    <div class="value">활성화</div>
+                    <div class="icon">BOX</div>
+                    <div class="label">임베드</div>
+                    <div class="value">Sandbox</div>
                 </div>
             </div>
         </div>

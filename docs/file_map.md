@@ -17,7 +17,7 @@
 | 파일 | 역할 |
 | --- | --- |
 | `docs/final_security_report.md` | 전체 연구 설계, 반영 근거, 최종 결론 |
-| `docs/research_progress_status.md` | 6주 일정 대비 진행 현황 |
+| `docs/research_progress_status.md` | 진행 현황과 남은 보완 작업 |
 | `docs/literature_korean_summary.md` | 참고 논문과 보안 용어 한글 해설 |
 | `docs/limitations.md` | 연구 한계 |
 | `docs/jitsi_meet_security_lab.md` | Jitsi Meet 실습 확장 가이드 |
@@ -41,5 +41,5 @@
 | --- | --- |
 | `references/stride/` | STRIDE 분석 원본 발표/PDF 자료 |
 | `화상회의/zoom-/` | 로컬 보안 실습 코드 |
-| `jitsi-meet/` | 화상회의 구조 참고용 오픈소스 코드 |
+| `jitsi-meet/` | 화상회의 구조 참고용 오픈소스 원본 코드 |
 | `tools/` | 검증, 그래프 생성, 논문 DOCX/HTML 생성 스크립트 |

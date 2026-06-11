@@ -18,9 +18,9 @@ Kim Geun Hyeong1, Kim Si Hwan2, Kim Su Chang3, Jeong Jin Hyeok4, Lee Taek5
 
 ## 초록
 
-비대면 협업 환경의 확산으로 화상회의 시스템은 인증, 세션, 미디어 스트리밍, 녹화 저장소, 외부 연동 기능을 함께 포함하는 복합 웹 서비스가 되었다. 이러한 시스템은 일반 웹 애플리케이션 취약점뿐 아니라 회의방 권한, WebRTC 미디어 경로, ICE 후보를 통한 IP 노출, 그룹 키 갱신과 같은 구조적 위협을 함께 가진다. 본 연구는 화상회의 아키텍처를 대상으로 설계 기반 STRIDE 위협 모델링과 동적 자동화 진단 도구인 OWASP ZAP의 취약점 탐지 효과성을 비교하였다. 실험 A에서는 A조가 Microsoft Threat Modeling Tool 기반으로 정리한 STRIDE 위협 9건과 DREAD 점수를 입력 데이터로 사용하였다. 실험 B에서는 보안 헤더가 적용된 동일 웹 인터페이스를 Docker 기반 OWASP ZAP Baseline Scan으로 재진단하여 경고 4건, 인스턴스 8건을 수집하였다. 두 결과는 OWASP Top 10:2021 기준으로 매핑하였다. 분석 결과 STRIDE는 8개 카테고리(80.0%)를 포괄했으며, ZAP은 주로 A05 Security Misconfiguration 1개 카테고리(10.0%)에 집중되었다. 공통 탐지 영역은 A05였고, STRIDE는 A01, A02, A03, A04, A07, A08, A09에서 단독 탐지 효과를 보였다. ZAP 결과 중 직접 취약점으로 보기 어려운 정보성 경고는 1건으로 분류하였다. 또한 보안 헤더 적용 전 1차 ZAP 결과(13건, 19개 인스턴스)와 비교하면 경고 수가 감소하여, 자동화 진단이 구현 보완 효과를 반복적으로 확인하는 데 유용함을 보였다.
+비대면 협업 환경의 확산으로 화상회의 시스템은 인증, 세션, 미디어 스트리밍, 녹화 저장소, 외부 연동 기능을 함께 포함하는 복합 웹 서비스가 되었다. 이러한 시스템은 일반 웹 애플리케이션 취약점뿐 아니라 회의방 권한, WebRTC 미디어 경로, ICE 후보를 통한 IP 노출, 그룹 키 갱신과 같은 구조적 위협을 함께 가진다. 본 연구는 화상회의 아키텍처를 대상으로 설계 기반 STRIDE 위협 모델링과 동적 자동화 진단 도구인 OWASP ZAP의 취약점 탐지 효과성을 비교하였다. 실험 A에서는 Microsoft Threat Modeling Tool 기반으로 정리한 STRIDE 위협 9건과 DREAD 점수를 입력 데이터로 사용하였다. 실험 B에서는 보안 헤더가 적용된 동일 웹 인터페이스를 Docker 기반 OWASP ZAP Baseline Scan으로 재진단하여 경고 4건, 인스턴스 8건을 수집하였다. 두 결과는 OWASP Top 10:2021 기준으로 매핑하였다. 분석 결과 STRIDE는 8개 카테고리(80.0%)를 포괄했으며, ZAP은 주로 A05 Security Misconfiguration 1개 카테고리(10.0%)에 집중되었다. 공통 탐지 영역은 A05였고, STRIDE는 A01, A02, A03, A04, A07, A08, A09에서 단독 탐지 효과를 보였다. ZAP 결과 중 직접 취약점으로 보기 어려운 정보성 경고는 1건으로 분류하였다. 또한 보안 헤더 적용 전 1차 ZAP 결과(13건, 19개 인스턴스)와 비교하면 경고 수가 감소하여, 자동화 진단이 구현 보완 효과를 반복적으로 확인하는 데 유용함을 보였다.
 
-두 실험의 장단점과 표현 가능 범위도 함께 비교하여, 실험 A안은 설계·구조 위험 설명에, 실험 B안은 실제 구현 상태 검증에 강점이 있음을 정리하였다. 추가 보조 검증에서는 Docker 기반 Jitsi Meet self-hosted 환경에서 인증, JWT, ICE 후보, Nmap, Jibri 기동 상태를 확인하여 정량 비교 결과의 운영 해석 범위를 보완하였다.
+두 방법의 장단점과 표현 가능 범위도 함께 비교하여, STRIDE 분석은 설계·구조 위험 설명에, ZAP 진단은 실제 구현 상태 검증에 강점이 있음을 정리하였다. 추가 보조 검증에서는 Docker 기반 Jitsi Meet self-hosted 환경에서 인증, JWT, ICE 후보, Nmap, Jibri 기동 상태를 확인하여 정량 비교 결과의 운영 해석 범위를 보완하였다.
 
 핵심어: 화상회의, STRIDE, OWASP ZAP, 위협 모델링, OWASP Top 10, WebRTC
 
@@ -30,7 +30,7 @@ Kim Geun Hyeong1, Kim Si Hwan2, Kim Su Chang3, Jeong Jin Hyeok4, Lee Taek5
 
 기존 보안 점검은 소스 코드 취약점 또는 웹 취약점 스캐너 결과에 집중하는 경우가 많다. 그러나 화상회의 환경에서는 실행 중인 웹 화면에서 관찰되는 보안 헤더 누락 외에도 회의 링크 유출, WebRTC ICE 후보 노출, 호스트 권한 혼동, 그룹 키 갱신 실패와 같은 설계 단계 위협이 중요하다. 반대로 STRIDE와 같은 설계 기반 분석만으로는 실제 응답 헤더, 브라우저 보안 정책, 서버 버전 노출, 캐시 정책과 같은 구현 상태를 반복적으로 검증하기 어렵다.
 
-본 연구는 6주 내 수행 가능한 학부 수준의 실증 연구를 목표로 한다. 새로운 보안 알고리즘을 제안하기보다, 오픈소스 화상회의 환경과 자동화 도구를 활용하여 STRIDE 위협 모델링과 OWASP ZAP 동적 진단의 탐지 범위 차이를 정량적으로 비교한다. 연구 질문은 STRIDE와 OWASP ZAP이 동일한 취약점 범위를 탐지하는지, STRIDE가 ZAP이 탐지하기 어려운 설계·구조적 위협을 식별하는지, ZAP이 STRIDE 분석만으로 확인하기 어려운 실행 환경 취약점을 탐지하는지, 두 방법을 OWASP Top 10 기준으로 결합할 때 보완 우선순위 판단에 도움이 되는지를 중심으로 구성하였다.
+본 연구는 제한된 로컬 실습 환경에서 재현 가능한 실증 비교를 목표로 한다. 새로운 보안 알고리즘을 제안하기보다, 오픈소스 화상회의 환경과 자동화 도구를 활용하여 STRIDE 위협 모델링과 OWASP ZAP 동적 진단의 탐지 범위 차이를 정량적으로 비교한다. 연구 질문은 STRIDE와 OWASP ZAP이 동일한 취약점 범위를 탐지하는지, STRIDE가 ZAP이 탐지하기 어려운 설계·구조적 위협을 식별하는지, ZAP이 STRIDE 분석만으로 확인하기 어려운 실행 환경 취약점을 탐지하는지, 두 방법을 OWASP Top 10 기준으로 결합할 때 보완 우선순위 판단에 도움이 되는지를 중심으로 구성하였다.
 
 ## 2. 선행연구
 
@@ -48,7 +48,7 @@ WebRTC 보안 연구는 브라우저 기반 실시간 통신에서 중간자 공
 
 ### 3.2 실험 A: STRIDE 위협 모델링
 
-실험 A에서는 A조의 Microsoft Threat Modeling Tool 기반 STRIDE 결과를 사용하였다. 해당 자료는 Jitsi Meet DFD를 바탕으로 Nginx, Prosody, Jicofo, JVB, Jigasi, User/Session Data Store를 주요 구성요소로 두고 Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege 위협을 도출하였다. 각 위협은 DREAD 기준의 Damage, Reproducibility, Exploitability, Affected Users, Discoverability 5개 항목을 10점 척도로 부여하였다. 최종 STRIDE 입력 데이터는 `reports/stride/stride_findings.json`에 9건으로 정리하였다.
+실험 A에서는 Microsoft Threat Modeling Tool 기반 STRIDE 결과를 사용하였다. 해당 자료는 Jitsi Meet DFD를 바탕으로 Nginx, Prosody, Jicofo, JVB, Jigasi, User/Session Data Store를 주요 구성요소로 두고 Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege 위협을 도출하였다. 각 위협은 DREAD 기준의 Damage, Reproducibility, Exploitability, Affected Users, Discoverability 5개 항목을 10점 척도로 부여하였다. 최종 STRIDE 입력 데이터는 `reports/stride/stride_findings.json`에 9건으로 정리하였다.
 
 ### 3.3 실험 B: OWASP ZAP 동적 진단
 
@@ -99,12 +99,12 @@ WebRTC 보안 연구는 브라우저 기반 실시간 통신에서 중간자 공
 [Figure 2] Changes in ZAP Alerts Before and After Security Header Application
 ![보안 헤더 적용 전후 ZAP 경고 변화](../reports/figures/zap_alert_reduction.png)
 
-팀 실습 기준 STRIDE 수동 분석은 DFD 작성, STRIDE 분류, DREAD 점수 산정을 포함해 약 60~90분 범위로 정리하였다. 본 비교 보고서의 분당 지표는 중앙값인 75분을 사용했으며, ZAP Baseline Scan은 Docker 실행 옵션 기준 5분으로 기록하였다.
+본 연구의 STRIDE 수동 분석은 DFD 작성, STRIDE 분류, DREAD 점수 산정을 포함해 약 60~90분 범위로 정리하였다. 분당 지표는 중앙값인 75분을 사용했으며, ZAP Baseline Scan은 Docker 실행 옵션 기준 5분으로 기록하였다.
 
 [표 3] 실험 A/B 통계 비교표
 [Table 3] Statistical Comparison of Experiment A and Experiment B
 
-| 통계 항목 | 실험 A안: STRIDE | 실험 B안: OWASP ZAP | 해석 |
+| 통계 항목 | 실험 A: STRIDE | 실험 B: OWASP ZAP | 해석 |
 | --- | ---: | ---: | --- |
 | 유효 분석 건수 | 9건 | 4건 | B안은 인스턴스 기준 8건으로 관찰됨 |
 | OWASP Top 10 커버리지 | 8/10, 80.0% | 1/10, 10.0% | A안이 더 넓은 보안 범위를 설명함 |
@@ -153,17 +153,17 @@ STRIDE는 화상회의 아키텍처의 신뢰 경계와 데이터 흐름을 기�
 
 ### 4.5 실험 A/B 장단점과 표현 범위
 
-실험 A안과 B안은 같은 화상회의 대상을 다루지만, 보여주는 정보의 층위가 다르다. A안은 설계도와 데이터 흐름을 기준으로 "발생 가능한 위협"을 넓게 설명하고, B안은 실행 중인 웹 인터페이스에서 "현재 관찰되는 구현 상태"를 좁지만 구체적으로 보여준다. 따라서 논문에서는 두 실험을 우열 관계로 해석하기보다, A안은 보안 검토 범위 설정과 위험 우선순위화, B안은 구현 보완 확인과 반복 검증에 적합한 방법으로 구분하였다.
+STRIDE 분석과 ZAP 진단은 같은 화상회의 대상을 다루지만, 보여주는 정보의 층위가 다르다. STRIDE는 설계도와 데이터 흐름을 기준으로 "발생 가능한 위협"을 넓게 설명하고, ZAP은 실행 중인 웹 인터페이스에서 "현재 관찰되는 구현 상태"를 좁지만 구체적으로 보여준다. 따라서 논문에서는 두 방법을 우열 관계로 해석하기보다, STRIDE는 보안 검토 범위 설정과 위험 우선순위화, ZAP은 구현 보완 확인과 반복 검증에 적합한 방법으로 구분하였다.
 
 [표 5] 실험 A/B 장단점 및 표현 가능 범위
 [Table 5] Strengths, Limitations, and Explanation Scope of Experiment A and B
 
 | 구분 | 장점 | 단점 | 논문에서 나타낼 수 있는 범위 |
 | --- | --- | --- | --- |
-| 실험 A안: STRIDE 위협 모델링 | 자동화 도구가 탐지하기 어려운 권한 상승, 부인 방지 실패, 데이터 잔류 지점, 암호화 누락 구간을 구조적으로 추론할 수 있음 | 구현 단계의 실제 코딩 실수는 직접 탐지하기 어렵고, 분석자의 판단에 따라 초점이 달라질 수 있음 | 설계 단계에서 예상되는 논리적 위험, 서버 간 통신 규약, OWASP 카테고리 매핑, DREAD 기반 우선순위, 보완 방향 |
-| 실험 B안: OWASP ZAP 동적 진단 | 실제 실행 중인 웹 응답을 자동 수집하므로 보안 헤더, CSP, 캐시 정책, 브라우저 보안 정책 적용 여부를 반복 검증할 수 있음 | Baseline Scan 범위가 웹 인터페이스 중심이어서 회의방 권한 모델, WebRTC ICE 정보, TURN/XMPP/JVB 내부 위협은 충분히 드러나지 않음 | 현재 배포 상태에서 관찰되는 설정 오류, 경고 인스턴스, 보안 헤더 보완 전후 변화, 오탐 후보 |
+| 실험 A: STRIDE 위협 모델링 | 자동화 도구가 탐지하기 어려운 권한 상승, 부인 방지 실패, 데이터 잔류 지점, 암호화 누락 구간을 구조적으로 추론할 수 있음 | 구현 단계의 실제 코딩 실수는 직접 탐지하기 어렵고, 분석자의 판단에 따라 초점이 달라질 수 있음 | 설계 단계에서 예상되는 논리적 위험, 서버 간 통신 규약, OWASP 카테고리 매핑, DREAD 기반 우선순위, 보완 방향 |
+| 실험 B: OWASP ZAP 동적 진단 | 실제 실행 중인 웹 응답을 자동 수집하므로 보안 헤더, CSP, 캐시 정책, 브라우저 보안 정책 적용 여부를 반복 검증할 수 있음 | Baseline Scan 범위가 웹 인터페이스 중심이어서 회의방 권한 모델, WebRTC ICE 정보, TURN/XMPP/JVB 내부 위협은 충분히 드러나지 않음 | 현재 배포 상태에서 관찰되는 설정 오류, 경고 인스턴스, 보안 헤더 보완 전후 변화, 오탐 후보 |
 
-실험 A안의 세부 장점은 DFD를 기반으로 여러 서버와 컴포넌트가 데이터를 주고받는 구조를 먼저 그린 뒤 위험을 추론한다는 점이다. 이 과정에서 Nginx, Prosody, Jicofo, JVB, 저장소와 같은 구성요소 사이의 신뢰 경계와 통신 규약을 함께 검토할 수 있으며, 단순한 웹 응답 스캔만으로는 드러나기 어려운 권한 상승 가능성, 행위 부인 가능성, 암호화가 빠진 내부 통신 구간, 설계자가 예상하지 못한 데이터 잔류 지점을 확인하는 데 유리하였다.
+STRIDE 분석의 세부 장점은 DFD를 기반으로 여러 서버와 컴포넌트가 데이터를 주고받는 구조를 먼저 그린 뒤 위험을 추론한다는 점이다. 이 과정에서 Nginx, Prosody, Jicofo, JVB, 저장소와 같은 구성요소 사이의 신뢰 경계와 통신 규약을 함께 검토할 수 있으며, 단순한 웹 응답 스캔만으로는 드러나기 어려운 권한 상승 가능성, 행위 부인 가능성, 암호화가 빠진 내부 통신 구간, 설계자가 예상하지 못한 데이터 잔류 지점을 확인하는 데 유리하였다.
 
 반면 A안은 설계 자료와 분석자의 해석을 바탕으로 하기 때문에 실제 코드 구현 과정에서 발생한 버그나 배포 설정 실수를 직접 증명하지는 못한다. 또한 자동화 도구처럼 결과의 유효성을 즉시 검증하는 절차가 부족하므로, 잘못된 전제에 따라 중요도가 낮은 위협에 초점이 맞춰질 가능성이 있다. 특히 시스템 규모가 커질수록 DFD 작성, STRIDE 분류, DREAD 점수 산정까지의 복잡도가 증가하며, 정적인 설계 자료만으로는 운영 중 발생하는 트래픽 패턴 변화나 네트워크 환경 변화를 실시간으로 반영하기 어렵다.
 
@@ -185,7 +185,7 @@ STRIDE는 화상회의 아키텍처의 신뢰 경계와 데이터 흐름을 기�
 
 ## 5. 결론
 
-본 연구는 화상회의 아키텍처를 대상으로 STRIDE 위협 모델링과 OWASP ZAP 동적 자동화 진단의 취약점 탐지 효과성을 OWASP Top 10 기준으로 비교하였다. 실험 결과 STRIDE는 A조가 도출한 9건의 설계 위협을 통해 8개 OWASP 카테고리를 포괄하였고, OWASP ZAP 재스캔은 4건의 경고와 8건의 인스턴스를 통해 주로 A05 Security Misconfiguration을 탐지하였다. STRIDE는 자동화 스캔이 놓치기 쉬운 권한 상승, 행위 부인 가능성, 데이터 잔류 지점, 암호화 누락 구간을 구조적으로 식별하는 데 강점이 있었다. 반면 ZAP은 실행 중인 웹 환경의 보안 헤더와 브라우저 정책 점검 및 보완 후 재검증에 강점이 있었다.
+본 연구는 화상회의 아키텍처를 대상으로 STRIDE 위협 모델링과 OWASP ZAP 동적 자동화 진단의 취약점 탐지 효과성을 OWASP Top 10 기준으로 비교하였다. 실험 결과 STRIDE는 정리된 9건의 설계 위협을 통해 8개 OWASP 카테고리를 포괄하였고, OWASP ZAP 재스캔은 4건의 경고와 8건의 인스턴스를 통해 주로 A05 Security Misconfiguration을 탐지하였다. STRIDE는 자동화 스캔이 놓치기 쉬운 권한 상승, 행위 부인 가능성, 데이터 잔류 지점, 암호화 누락 구간을 구조적으로 식별하는 데 강점이 있었다. 반면 ZAP은 실행 중인 웹 환경의 보안 헤더와 브라우저 정책 점검 및 보완 후 재검증에 강점이 있었다.
 
 따라서 화상회의 보안 평가는 STRIDE와 ZAP 중 하나만 선택하기보다, STRIDE로 위협 범위를 먼저 정의하고 ZAP으로 실제 구현과 배포 설정을 반복 검증하는 하이브리드 프로세스로 수행하는 것이 적합하다. 본 연구의 핵심 한계는 STRIDE-ZAP 정량 비교가 로컬 실습용 화상회의 웹 클라이언트와 ZAP Baseline Scan 결과를 중심으로 수행되었다는 점이다. 다만 Jitsi Meet Docker lab에서 인증, JWT, ICE 후보, Nmap 포트 노출, JVB/Jicofo/Jibri 기동을 보조 검증하여 실제 운영형 구성요소와 연결되는 위험을 추가로 확인하였다. 그럼에도 장기 부하, TURN relay 강제, 녹화 파일 생성, 모바일 앱, 운영망 로그와 개인정보 정책까지 일반화하려면 별도 운영 환경에서 추가 검증해야 한다.
 

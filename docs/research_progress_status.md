@@ -19,7 +19,7 @@
 | Jitsi Meet 심층 조사 | 추가 완료 | `docs/jitsi_meet_deep_research.md` | Jitsi Meet 기능, 효과, 문제점을 중심으로 정리 |
 | Jitsi Meet 실제 검증 | 추가 완료 | `docs/jitsi_meet_full_validation_report.md`, `reports/evidence/jitsi_meet_full_validation_2026-06-03.md` | Docker lab에서 인증/JWT/ICE/Jibri/ZAP/Nmap 결과 정리 |
 
-## 2. 6주 계획 대비 진행률
+## 2. 단계별 진행률
 
 | 주차 | 계획 | 진행 상태 | 근거 파일 |
 | --- | --- | --- | --- |
@@ -28,7 +28,7 @@
 | 3주차 | OWASP ZAP 동적 진단 | 완료 | `reports/zap/baseline/zap-report.*`, `reports/zap/secure/zap-secure-report.*` |
 | 4주차 | OWASP Top 10 매핑, 오탐 분석, 시각화 | 완료 | `reports/comparison/stride_zap_comparison.md`, `reports/figures/*.png` |
 | 5주차 | 논문 초안 작성 | 완료 | `paper/paper_draft.md` |
-| 6주차 | 수정 및 제출 준비 | 대부분 완료 | `paper/paper_submission_STRIDE_ZAP.docx` 양식 반영, 저자 정보와 Jitsi Meet 보조 검증 내용 반영 |
+| 최종 정리 | 수정 및 제출 준비 | 대부분 완료 | `paper/paper_submission_STRIDE_ZAP.docx` 양식 반영, 저자 정보와 Jitsi Meet 보조 검증 내용 반영 |
 
 ## 3. 현재 정량 결과
 
@@ -52,4 +52,4 @@
 
 ## 5. 현재 한계 문장
 
-본 연구의 STRIDE-ZAP 정량 비교는 로컬 실습용 화상회의 웹 클라이언트와 ZAP Baseline Scan 재스캔 결과를 중심으로 수행되었다. 추가로 Jitsi Meet Docker lab에서 인증, JWT, ICE 후보, JVB, Jicofo, Jibri 기동까지 검증했지만, 실제 운영망의 장기 부하, TURN relay 강제, 녹화 파일 생성, 모바일 앱까지 일반화하려면 별도 운영 환경 검증이 필요하다. 다만 6주 내 학부 수준 연구라는 조건에서는 STRIDE 기반 설계 위협과 ZAP 기반 실행 환경 경고를 동일한 OWASP Top 10 기준으로 매핑하고, 보안 헤더 적용 전후 경고 감소와 Jitsi Meet 구성요소별 실제 점검 결과까지 확인했다는 점에서 실증적 의미가 있다.
+본 연구의 STRIDE-ZAP 정량 비교는 로컬 실습용 화상회의 웹 클라이언트와 ZAP Baseline Scan 재스캔 결과를 중심으로 수행되었다. 추가로 Jitsi Meet Docker lab에서 인증, JWT, ICE 후보, JVB, Jicofo, Jibri 기동까지 검증했지만, 실제 운영망의 장기 부하, TURN relay 강제, 녹화 파일 생성, 모바일 앱까지 일반화하려면 별도 운영 환경 검증이 필요하다. 다만 제한된 실습 환경 안에서 STRIDE 기반 설계 위협과 ZAP 기반 실행 환경 경고를 동일한 OWASP Top 10 기준으로 매핑하고, 보안 헤더 적용 전후 경고 감소와 Jitsi Meet 구성요소별 실제 점검 결과까지 확인했다는 점에서 실증적 의미가 있다.

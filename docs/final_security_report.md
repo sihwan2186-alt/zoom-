@@ -17,12 +17,12 @@ Zoom, Jitsi Meet 같은 제품명은 논문 제목, 참고 사례, 테스트용 
 | 구분 | 진행상황 |
 | --- | --- |
 | 연구 방향 | STRIDE 위협 모델링과 OWASP ZAP 동적 진단의 취약점 탐지 효과성 비교로 확정 |
-| 실험 A | A조가 작성한 `references/stride/stride_threat_model.pdf`의 STRIDE 9건과 DREAD 10점 척도 결과 반영 |
+| 실험 A | `references/stride/stride_threat_model.pdf`의 STRIDE 9건과 DREAD 10점 척도 결과 반영 |
 | 실험 B | 실제 OWASP ZAP Baseline Scan 결과를 확보하고 OWASP Top 10 기준으로 매핑 |
 | 비교 분석 | 탐지 건수, 커버리지, 중복/단독 탐지, 오탐률, 위험도 가중 점수, 우선순위 항목 산출 |
 | 시각화 | Markdown 표와 PNG 기반 커버리지/탐지범위/ZAP 감소 그래프 출력 추가 |
 | 논문 초안 | `paper/paper_draft.md`와 `paper/paper_submission_STRIDE_ZAP.docx`에 초록, 서론, 선행연구, 연구방법, 분석결과, 결론, 참고문헌 작성 |
-| 진행 현황표 | `docs/research_progress_status.md`에 6주 일정 대비 완료/잔여 작업 정리 |
+| 진행 현황표 | `docs/research_progress_status.md`에 완료 항목과 남은 보완 작업 정리 |
 | 실험 대상 코드 | 인증, 세션, 암호화, 개인정보 보호, 입력 검증, 평가 모듈에 화상회의 특화 보안 요소 반영 |
 | 검증 | Python/Java 컴파일, 주요 보안 모듈 실행, 실제 ZAP JSON 기반 STRIDE-ZAP 비교 산출물 생성 검증 완료 |
 
@@ -134,12 +134,12 @@ Zoom, Jitsi Meet 같은 제품명은 논문 제목, 참고 사례, 테스트용 
 
 ## 6. 실제 실험 결과 입력 위치
 
-현재 실제 ZAP Baseline Scan 기준선 결과는 `reports/zap/baseline/zap-report.json`, `reports/zap/baseline/zap-report.md`, `reports/zap/baseline/zap-report.html`로 확보했다. 이후 ZAP 경고 중 보안 헤더와 CSP 관련 항목을 줄이기 위해 클라이언트의 inline CSS/JS를 분리하고 `secure_static_server.py`를 추가했다. Docker 기반 재스캔 결과는 `reports/zap/secure/zap-secure-report.json`, `reports/zap/secure/zap-secure-report.md`, `reports/zap/secure/zap-secure-report.html`로 저장했다. 실험 A의 STRIDE 결과는 A조의 `references/stride/stride_threat_model.pdf`를 기준으로 `reports/stride/stride_findings.json`에 9건으로 분리했으며, 현재 논문 본문과 비교 결과는 이 STRIDE 입력 파일과 보안 헤더 적용 후 ZAP JSON을 결합한 상태다.
+현재 실제 ZAP Baseline Scan 기준선 결과는 `reports/zap/baseline/zap-report.json`, `reports/zap/baseline/zap-report.md`, `reports/zap/baseline/zap-report.html`로 확보했다. 이후 ZAP 경고 중 보안 헤더와 CSP 관련 항목을 줄이기 위해 클라이언트의 inline CSS/JS를 분리하고 `secure_static_server.py`를 추가했다. Docker 기반 재스캔 결과는 `reports/zap/secure/zap-secure-report.json`, `reports/zap/secure/zap-secure-report.md`, `reports/zap/secure/zap-secure-report.html`로 저장했다. 실험 A의 STRIDE 결과는 `references/stride/stride_threat_model.pdf`를 기준으로 `reports/stride/stride_findings.json`에 9건으로 분리했으며, 현재 논문 본문과 비교 결과는 이 STRIDE 입력 파일과 보안 헤더 적용 후 ZAP JSON을 결합한 상태다.
 
 | 실험 산출물 | 입력/반영 위치 | 갱신 내용 |
 | --- | --- | --- |
 | ZAP JSON 보고서 | `reports/zap/secure/zap-secure-report.json`과 `threat_zap_comparison.py --zap-json` 옵션 | 보안 헤더 적용 후 ZAP 경고 4건, 인스턴스 8건, 위험도, OWASP Top 10 매핑 반영 |
-| A조 STRIDE JSON | `reports/stride/stride_findings.json`과 `threat_zap_comparison.py --stride-json` 옵션 | A조 STRIDE 위협 9건, DREAD 10점 척도 점수, OWASP Top 10 매핑 반영 |
+| STRIDE JSON | `reports/stride/stride_findings.json`과 `threat_zap_comparison.py --stride-json` 옵션 | STRIDE 위협 9건, DREAD 10점 척도 점수, OWASP Top 10 매핑 반영 |
 | STRIDE-ZAP 비교 보고서 | `reports/comparison/stride_zap_comparison.md`, `reports/comparison/stride_zap_summary.json` | 중복 탐지, STRIDE 단독 탐지, ZAP 단독 탐지, 결합 커버리지, ZAP 오탐 검토표 생성 완료 |
 | 실행 증거 | `reports/evidence/execution_evidence_2026-06-01.md` | 보안 헤더 적용 서버의 HEAD 응답과 `Test-NetConnection` 포트 확인 결과 저장 |
 | 최종 해석 | 이 문서의 `검증 결과`와 `최종 결론` | 실제 ZAP 결과와 STRIDE JSON 기반 해석 반영 |
@@ -202,7 +202,7 @@ python "화상회의\zoom-\client\secure_static_server.py" --port 8082
 
 ### 실측 STRIDE-ZAP 비교 결과
 
-현재 비교값은 A조 PDF를 반영한 `reports/stride/stride_findings.json`의 STRIDE 위협 9건과 보안 헤더 적용 후 ZAP Baseline Scan JSON(`reports/zap/secure/zap-secure-report.json`)을 기준으로 산출했다. 보안 헤더 적용 전 1차 기준선 결과는 경고 13건, 인스턴스 19건이었고, 재스캔 후 경고 4건, 인스턴스 8건으로 감소하였다.
+현재 비교값은 `reports/stride/stride_findings.json`의 STRIDE 위협 9건과 보안 헤더 적용 후 ZAP Baseline Scan JSON(`reports/zap/secure/zap-secure-report.json`)을 기준으로 산출했다. 보안 헤더 적용 전 1차 기준선 결과는 경고 13건, 인스턴스 19건이었고, 재스캔 후 경고 4건, 인스턴스 8건으로 감소하였다.
 
 | 지표 | STRIDE | ZAP | 결합/해석 |
 | --- | ---: | ---: | --- |

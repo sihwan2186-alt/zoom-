@@ -7,6 +7,7 @@ same static-file behavior while adding the headers used in the final report.
 """
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from os import PathLike
 from pathlib import Path
 import argparse
 
@@ -47,6 +48,12 @@ class SecureStaticHandler(SimpleHTTPRequestHandler):
 
     def version_string(self) -> str:
         return "SecureMeetLab"
+
+    def guess_type(self, path: str | PathLike[str]) -> str:
+        content_type = super().guess_type(path)
+        if content_type in {"text/html", "text/css", "text/javascript", "application/javascript"}:
+            return f"{content_type}; charset=utf-8"
+        return content_type
 
     def end_headers(self) -> None:
         for name, value in SECURITY_HEADERS.items():

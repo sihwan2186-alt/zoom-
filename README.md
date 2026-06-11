@@ -1,6 +1,6 @@
 # 화상회의 STRIDE-ZAP 탐지 효과성 비교 연구
 
-이 저장소는 화상회의 아키텍처 환경에서 STRIDE 위협 모델링과 OWASP ZAP 동적 진단의 취약점 탐지 효과성을 비교한 학부 연구 산출물이다. 특정 제품을 평가하기보다, 설계 기반 분석과 실행 환경 스캔이 어떤 취약점 범위를 다르게 탐지하는지 OWASP Top 10 기준으로 정리한다.
+이 저장소는 화상회의 아키텍처 환경에서 STRIDE 위협 모델링과 OWASP ZAP 동적 진단의 취약점 탐지 효과성을 비교한 보안 실습·연구 산출물이다. 특정 제품을 평가하기보다, 설계 기반 분석과 실행 환경 스캔이 어떤 취약점 범위를 다르게 탐지하는지 OWASP Top 10 기준으로 정리한다.
 
 ## 먼저 볼 파일
 
@@ -12,7 +12,7 @@
 | 최종 연구 요약 | `docs/final_security_report.md` |
 | Jitsi Meet 심층 조사 | `docs/jitsi_meet_deep_research.md` |
 | Jitsi Meet 실제 검증 보고서 | `docs/jitsi_meet_full_validation_report.md` |
-| 진행 현황 | `docs/research_progress_status.md` |
+| 진행 현황과 남은 작업 | `docs/research_progress_status.md` |
 | 비교 결과 보고서 | `reports/comparison/stride_zap_comparison.md` |
 | 실행 증거 | `reports/evidence/execution_evidence_2026-06-01.md` |
 
@@ -32,7 +32,7 @@
 ├─ references/stride/     # STRIDE 원본 발표/PDF 자료
 ├─ tools/                 # 보고서·논문 재생성 및 검증 스크립트
 ├─ 화상회의/zoom-/        # 로컬 보안 실습 코드
-└─ jitsi-meet/            # 화상회의 구조 참고용 오픈소스 코드
+└─ jitsi-meet/            # 화상회의 구조 참고용 오픈소스 원본 코드
 ```
 
 ## 핵심 결과
@@ -122,4 +122,4 @@ docker run --rm -v "${reportDir}:/zap/wrk/:rw" -t ghcr.io/zaproxy/zaproxy:stable
 
 ## 한계
 
-본 연구의 STRIDE-ZAP 정량 비교는 로컬 실습용 화상회의 웹 클라이언트와 OWASP ZAP Baseline Scan 결과를 중심으로 수행되었다. 추가로 Jitsi Meet Docker lab에서 인증, JWT, ICE 후보, JVB, Jicofo, Jibri 기동까지 검증했지만, 실제 운영망의 장기 부하, TURN relay 강제, 녹화 파일 생성, 모바일 앱까지 일반화하려면 별도 운영 환경 검증이 필요하다.
+본 연구의 STRIDE-ZAP 정량 비교는 로컬 실습용 화상회의 웹 클라이언트와 OWASP ZAP Baseline Scan 결과를 중심으로 수행되었다. `jitsi-meet/`는 화상회의 구조 이해를 위한 참고 원본이며, 핵심 실습 코드는 `화상회의/zoom-/`와 `reports/` 산출물에 있다. 추가로 Jitsi Meet Docker lab에서 인증, JWT, ICE 후보, JVB, Jicofo, Jibri 기동까지 검증했지만, 실제 운영망의 장기 부하, TURN relay 강제, 녹화 파일 생성, 모바일 앱까지 일반화하려면 별도 운영 환경 검증이 필요하다.
